@@ -23,7 +23,6 @@ done
 log_info "= Main-Menu Choice: ${CHOSEN_MENU}"
 case $CHOSEN_MENU in
   "exit")
-    log_info "== Exiting gracefully..."
     end_gracefully
     ;;
   "Basic Secure")

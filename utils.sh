@@ -131,7 +131,7 @@ return 1
 # It then Backs up the latest-log-file using backup_log and exit's the program with code 0
 #######################################
 end_gracefully() {
-log_info "Ending gracefully! Backing up latest log and exiting with code 0..."
+log_info "! Exiting gracefully! Backing up latest log and exiting with code 0..."
 backup_log
 exit 0
 }
@@ -141,7 +141,7 @@ exit 0
 # It then Backs up the latest-log-file using backup_log and exit's the program with code 0
 #######################################
 end_sigint() {
-log_error "SIGINT received/trapped! Backing up latest log and exiting with code 0..."
+log_error "! Exiting - SIGINT received/trapped! Backing up latest log and exiting with code 0..."
 backup_log
 exit 0
 }

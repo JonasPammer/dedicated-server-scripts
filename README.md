@@ -20,5 +20,6 @@ user@host /var/pixeltutorials-root_server-scripts $ git pull origin master
 
 Usage:
 ```bash
-user@host /var/pixeltutorials-root_server-scripts $ sudo ./start.sh
+user@host /var/pixeltutorials-root_server-scripts $ chmod +x start
+user@host /var/pixeltutorials-root_server-scripts $ sudo ./start
 ```
