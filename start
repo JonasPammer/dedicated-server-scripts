@@ -1,0 +1,102 @@
+#!/bin/bash
+
+# important: set pipefail bash option, see https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
+set -eo pipefail
+
+# import global utils
+source utils.sh
+
+# initialize global utils
+init_log
+mkdir -p "${TEMP_DIR}"
+#mktemp -d "${TEMP_DIR}"
+
+
+# Check if running as root
+if [[ "$EUID" -ne 0 ]]; then
+  log_error "Please run the script as root."
+  backup_log
+  exit 1
+fi
+
+
+## Some Testing
+#log_info "hey"
+#log_debug "hey"
+#log_err "hey"
+#{
+#  echo "echo 1"
+#  ls -l
+#  echo "echo 2"
+#} | log_debug_output
+
+log_info "= Make sure programs I always need are installed"
+log_info "== unattended Refresh APT-Sources"
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt update -y  -o Dpkg::Options::="--force-confdef" | log_debug_output
+
+log_info "== (Unattended) Install Tools available in the default debian-buster repository"
+#/usr/bin/env DEBIAN_FRONTEND=noninteractive apt install -y -o Dpkg::Options::="--force-confdef" \
+#    sudo \
+#    man \
+#    dos2unix \
+#    git \
+#    nano \
+#    neofetch \
+#    screenfetch \
+#    htop \
+#    dialog \
+#    ffmpeg \
+#    ranger \
+#    exa \
+#    lolcat | log_debug_output
+apt_without_interaction "install" "sudo \
+    man \
+    dos2unix \
+    git \
+    nano \
+    neofetch \
+    screenfetch \
+    htop \
+    dialog \
+    ffmpeg \
+    ranger \
+    exa \
+    lolcat" | log_debug_output
+
+log_info "== (Unattended) Install of 'gimmick' Tools available in the default debian-buster repository..."
+#/usr/bin/env DEBIAN_FRONTEND=noninteractive apt install -y -o Dpkg::Options::="--force-confdef" \
+#    cmatrix | log_debug_output
+apt_without_interaction "install" "cmatrix" | log_debug_output
+
+
+# Not needed. Included in debian-buster repository (https://packages.debian.org/buster/exa)
+### Install "exa - A Modern Replacement for “ls Command” Written in Rust" as described here https://www.tecmint.com/exa-a-replacement-for-ls-command-linux/
+#### Install Development-Tools:
+#sudo apt -y \
+#  install libgit2-24 libgit2-dev cmake
+#### Install Rust Programming-Language:
+#curl https://sh.rustup.rs -sSf | sh
+#### Actually make install from source:
+#pushd "${TEMP_DIR}" >/dev/null
+#git clone https://github.com/ogham/exa.git
+#cd exa
+#sudo make install
+#popd >/dev/null
+
+
+
+
+
+log_info "= Starting mainmenu-loop"
+while :
+do
+  log_info "= Starting mainmenu"
+  . ./menus/mainmenu.sh
+done
+
+
+
+
+
+#
+backup_log
