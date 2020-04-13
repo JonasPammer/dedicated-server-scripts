@@ -29,11 +29,6 @@ case $CHOSEN_MENU in
     log_info "== Install UFW"
     apt_without_interaction "install" "ufw" | log_debug_output
 
-    # See https://talk.lowendspirit.com/discussion/290/resolved-ufw
-#    log_info "== Updating alternatives (Use iptables[6]-legacy)"
-#    update-alternatives --set iptables /usr/sbin/iptables-legacy
-#    update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-
     log_info "== Allowing Basic Ports (22, 80, 443, 10000)"
     ufw allow 22 # SSH (and therefore also SFTP)
     ufw allow 80 # HTTP
