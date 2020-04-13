@@ -21,8 +21,8 @@ if [[ "$EUID" -ne 0 ]]; then
 fi
 
 log_info "= Make sure programs I always need are installed"
-log_info "== unattended Refresh APT-Sources"
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt update -y  -o Dpkg::Options::="--force-confdef" | log_debug_output
+log_info "== (Unattended) Refresh APT-Sources"
+apt_get_without_interaction "update" | log_debug_output
 
 log_info "== (Unattended) Install Tools available in the default debian-buster repository"
 apt_get_without_interaction "install" "sudo \
