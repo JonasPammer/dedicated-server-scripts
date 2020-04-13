@@ -3,7 +3,9 @@
 # import global utils
 source "${SCRIPT_DIR}/utils.sh"
 
+
 # clear last selection
+read -p "Press Enter to continue..."
 CHOSEN_MENU=""
 # Loop until any selection has been made
 while [[ -z "$CHOSEN_MENU" ]]; do
@@ -30,13 +32,13 @@ case $CHOSEN_MENU in
     apt_without_interaction "install" "ufw" | log_debug_output
 
     log_info "== Allowing Basic Ports (22, 80, 443, 10000)"
-    ufw allow 22 # SSH (and therefore also SFTP)
-    ufw allow 80 # HTTP
-    ufw allow 443 # HTTPS
-    ufw allow 10000 # Webmin
+    ufw allow 22 | log_debug_output # SSH (and therefore also SFTP)
+    ufw allow 80 | log_debug_output # HTTP
+    ufw allow 443 | log_debug_output # HTTPS
+    ufw allow 10000 | log_debug_output # Webmin
 
     log_info "== Set default 'outgoing'-rule to 'allow'"
-    ufw default allow outgoing
+    ufw default allow outgoing | log_debug_output
 
     log_info "== Install Fail2Ban"
     apt_without_interaction "install" "fail2ban" | log_debug_output
