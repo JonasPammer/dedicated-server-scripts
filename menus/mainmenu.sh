@@ -29,7 +29,7 @@ case $CHOSEN_MENU in
     ;;
   "Basic Secure")
     log_info "== Install UFW"
-    apt_without_interaction "install" "ufw" | log_debug_output
+    apt_get_without_interaction "install" "ufw" | log_debug_output
 
     log_info "== Allowing Basic Ports (22, 80, 443, 10000)"
     ufw allow 22 | log_debug_output # SSH (and therefore also SFTP)
@@ -41,7 +41,7 @@ case $CHOSEN_MENU in
     ufw default allow outgoing | log_debug_output
 
     log_info "== Install Fail2Ban"
-    apt_without_interaction "install" "fail2ban" | log_debug_output
+    apt_get_without_interaction "install" "fail2ban" | log_debug_output
 
     log_info "== Enable & Start Fail2Ban"
     systemctl enable fail2ban | log_debug_output

@@ -24,7 +24,7 @@ log_info "== unattended Refresh APT-Sources"
 /usr/bin/env DEBIAN_FRONTEND=noninteractive apt update -y  -o Dpkg::Options::="--force-confdef" | log_debug_output
 
 log_info "== (Unattended) Install Tools available in the default debian-buster repository"
-apt_without_interaction "install" "sudo \
+apt_get_without_interaction "install" "sudo \
     man \
     dos2unix \
     git \
@@ -39,7 +39,7 @@ apt_without_interaction "install" "sudo \
     lolcat" | log_debug_output
 
 log_info "== (Unattended) Install of 'gimmick' Tools available in the default debian-buster repository..."
-apt_without_interaction "install" "cmatrix" | log_debug_output
+apt_get_without_interaction "install" "cmatrix" | log_debug_output
 
 
 

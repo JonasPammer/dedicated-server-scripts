@@ -116,9 +116,9 @@ init_log() {
 #   1 - Gets appended after "apt", aka. should be the action to perform (e.G: "install", "update")
 #   2 - Gets appended to the end of the command, aka. should be the packages
 #######################################
-apt_without_interaction() {
+apt_get_without_interaction() {
 if [[ ! -z "${1}" ]]; then
-  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt ${1} -y -o Dpkg::Options::="--force-confdef" ${2}
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get ${1} -y -o Dpkg::Options::="--force-confdef" ${2}
   return 0
 fi
 return 1
