@@ -32,6 +32,8 @@ case $CHOSEN_MENU in
     . "${SCRIPT_DIR}/modules/basic_secure.sh"
     ;;
   "Make sudo User (INTERACTIVE!)")
-    . "${SCRIPT_DIR}/modules/make_sudoer.sh"
+#    . "${SCRIPT_DIR}/modules/make_sudoer.sh"
+    . "${SCRIPT_DIR}/modules/manage_sudoers.sh"
+
     ;;
 esac
