@@ -11,7 +11,7 @@ fi
 # VARIABLES
 #======================================
 export LOG_FILES_DIR="${SCRIPT_DIR}/.logs/";
-export LOG_LATEST="${LOG_FILES_DIR}latest.log.txt";
+export LOG_LATEST="${LOG_FILES_DIR}latest.log";
 export TEMP_DIR="${SCRIPT_DIR}/.tmp/";
 
 export SCRIPT_NAME="PixelTutorials Dedicated Server Scripts";
@@ -90,7 +90,9 @@ log_debug_output() {
 #   LOG_FILES_DIR  -  Path to the folder to store the dump/backup-file in
 #######################################
 backup_log() {
-  cp "${LOG_LATEST}" "${LOG_FILES_DIR}$(date +'%Y-%m-%dT%H-%M-%S').log.bak"
+  local -r generated_backup_log_file=${LOG_FILES_DIR}$(date +'%Y-%m-%dT%H-%M-%S').log.bak
+  log_info "Backing up ${LOG_LATEST} to ${generated_backup_log_file}..."
+  cp "${LOG_LATEST}" "${generated_backup_log_file}"
 }
 
 #######################################
@@ -131,7 +133,7 @@ return 1
 # It then Backs up the latest-log-file using backup_log and exit's the program with code 0
 #######################################
 end_gracefully() {
-log_info "! Exiting gracefully! Backing up latest log and exiting with code 0..."
+log_info "Exiting gracefully! Backing up latest log and exiting with code 0..."
 backup_log
 exit 0
 }
@@ -141,7 +143,7 @@ exit 0
 # It then Backs up the latest-log-file using backup_log and exit's the program with code 0
 #######################################
 end_sigint() {
-log_error "! Exiting - SIGINT received/trapped! Backing up latest log and exiting with code 0..."
+log_error "Exiting - SIGINT received/trapped! Backing up latest log and exiting with code 0..."
 backup_log
 exit 0
 }
