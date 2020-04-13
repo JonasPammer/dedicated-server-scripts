@@ -128,6 +128,15 @@ fi
 return 1
 }
 
+
+check_is_utils_initialized() {
+  if [[ -d "${SCRIPT_DIR}" ]] && [[ -d "${LOG_FILES_DIR}" ]] && [[ -d "${TEMP_DIR}" ]]; then
+    return 0
+  fi
+  log_error "You can't just run any script file! You need to run the file 'start', located in the roots of the script-directory!"
+  end_gracefully
+}
+
 #######################################
 # Makes one last log that states that the program exited gracefully.
 # It then Backs up the latest-log-file using backup_log and exit's the program with code 0
