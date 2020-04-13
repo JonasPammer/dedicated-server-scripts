@@ -67,8 +67,8 @@ case $CHOSEN_MENU in
       log_error "== There are already users will the group of 'sudo'! (${detected_sudo_users[*]}) (${fetched_users_in_sudo_group})"
 
       dialog --backtitle "${SCRIPT_NAME}" \
-        --title "Do you still want to create a new sudo-user?" \
-        --yesno "There are already users will the group of 'sudo'! (${detected_sudo_users[*]})" 0 0 \
+        --title "" \
+        --yesno "There are already users will the group of 'sudo'! (${detected_sudo_users[*]}) \n \n Do you still want to create a new sudo-user?" 0 0 \
         2>"${TEMP_DIR}/sudo_user-create_additional.choice"
 
       response=$(cat "${TEMP_DIR}/sudo_user-create_additional.choice")
