@@ -24,8 +24,7 @@ log_info "= Main-Menu Choice: ${CHOSEN_MENU}"
 case $CHOSEN_MENU in
   "exit")
     log_info "== Exiting gracefully..."
-    backup_log
-    exit 0
+    end_gracefully
     ;;
   "Basic Secure")
     log_info "== Install UFW"

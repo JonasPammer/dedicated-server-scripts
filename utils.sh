@@ -115,6 +115,8 @@ init_log() {
 # Parameters:
 #   1 - Gets appended after "apt", aka. should be the action to perform (e.G: "install", "update")
 #   2 - Gets appended to the end of the command, aka. should be the packages
+# Return:
+#   0 if at least the first parameter was given
 #######################################
 apt_get_without_interaction() {
 if [[ ! -z "${1}" ]]; then
@@ -122,4 +124,24 @@ if [[ ! -z "${1}" ]]; then
   return 0
 fi
 return 1
+}
+
+#######################################
+# Makes one last log that states that the program exited gracefully.
+# It then Backs up the latest-log-file using backup_log and exit's the program with code 0
+#######################################
+end_gracefully() {
+log_info "Ending gracefully! Backing up latest log and exiting with code 0..."
+backup_log
+exit 0
+}
+
+#######################################
+# Makes one last log that states that the program exited with the cause that the program has trapped a SIGINT-signal.
+# It then Backs up the latest-log-file using backup_log and exit's the program with code 0
+#######################################
+end_sigint() {
+log_error "SIGINT received/trapped! Backing up latest log and exiting with code 0..."
+backup_log
+exit 0
 }

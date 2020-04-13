@@ -11,6 +11,7 @@ init_log
 mkdir -p "${TEMP_DIR}"
 #mktemp -d "${TEMP_DIR}"
 
+trap end_sigint SIGINT
 
 # Check if running as root
 if [[ "$EUID" -ne 0 ]]; then
@@ -55,4 +56,4 @@ done
 
 
 #
-backup_log
+end_gracefully
