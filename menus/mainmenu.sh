@@ -58,13 +58,13 @@ case $CHOSEN_MENU in
 
     # From https://www.ostechnix.com/find-sudo-users-linux-system/
     fetched_users_in_sudo_group=$(getent group sudo | cut -d: -f4)
-    if [[ -z "${fetched_users_in_sudo_group}" ]]; then
+    if [[ "${fetched_users_in_sudo_group}" ]]; then
       # From: https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash#tab-top
-      detected_sudo_users=$(echo "${fetched_users_in_sudo_group}" | tr "," "\n")
+      detected_sudo_users=$(echo "${fetched_users_in_sudo_group}" | tr "," " ")
     fi
 
-    if [[ ${#detected_sudo_users[@]} -eq 0 ]]; then
-      log_error "== There are already users will the group of 'sudo'! (${detected_sudo_users[*]})"
+    if [[ ${#detected_sudo_users[@]} -ne 0 ]]; then
+      log_error "== There are already users will the group of 'sudo'! (${detected_sudo_users[*]}) (${fetched_users_in_sudo_group})"
 
       dialog --backtitle "${SCRIPT_NAME}" \
         --title "Do you still want to create a new sudo-user?" \
@@ -89,10 +89,9 @@ case $CHOSEN_MENU in
     # Either there is no user that is a part of the group "sudo", or the user explicitly chose to add another one:
     ## Ask for name
     log_info "== Asking user to provide a username..."
-    read -p 'Please provide a Username: ' chosen_username
     dialog --backtitle "${SCRIPT_NAME}" \
       --title "Please provide a name for the new User" \
-      --inputbox "" 0 0 "Furrynator" \
+      --inputbox "" 0 0 "furrynator" \
       2>"${TEMP_DIR}/sudo_user-provided_name.choice"
 
     chosen_username=$(cat "${TEMP_DIR}/sudo_user-provided_name.choice")
