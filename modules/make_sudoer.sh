@@ -20,10 +20,12 @@ fi
 if [[ ${#detected_sudo_users[@]} -ne 0 ]]; then
   log_error "== There are already users will the group of 'sudo'! (${detected_sudo_users[*]}) (${fetched_users_in_sudo_group})"
 
+  set +e # Do NOT quit if the following EXIT-CODE is other than 0
   dialog --backtitle "${SCRIPT_NAME}" \
     --title "" \
-    --yesno "There are already users will the group of 'sudo'! (${detected_sudo_users[*]}) \n \n Do you still want to create a new sudo-user?" 0 0
+    --yesno "There are already users with the group of 'sudo'! (${detected_sudo_users[*]}) \n \n Do you still want to create/make a sudo-user?" 0 0
   dialog_response=$?
+  set -e # Revert to normally-wanted behaviour (Exit immediately if something goes wrong)
 
   if [[ "${dialog_response}" -ne 0 ]]; then # no or ESC
     log_debug "=== Returning back to main-menu..."
