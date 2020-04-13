@@ -2,6 +2,7 @@
 
 # import global utils
 source "${SCRIPT_DIR}/utils.sh"
+set -eo pipefail
 check_is_utils_initialized
 
 # clear last selection
