@@ -11,7 +11,7 @@ while [[ -z "$CHOSEN_MENU" ]]; do
   dialog --backtitle "${SCRIPT_NAME}" --nocancel \
     --title "Main Menu" \
     --menu "" 0 0 0 \
-      "Basic Secure" "Setup UFW (Firewall) and Fail2Ban" \
+      "Basic Secure" "Install/Enable UFW (Firewall) and Fail2Ban + Setup UFW with simple rules" \
       "exit" "." 2>${TEMP_DIR}/mainmenu.chosen
   CHOSEN_MENU=$(cat "${TEMP_DIR}/mainmenu.chosen")
 
