@@ -1,4 +1,10 @@
 #!/bin/bash
+#
+# This script gets called over-and-over again until the program has exited
+# Presents the user a dialog-menu of available actions. It then calls the appropriate module found in the "/modules"-directory.
+#
+# @author PixelTutorials
+#
 
 # import global utils
 source "${SCRIPT_DIR}/utils.sh"
@@ -14,8 +20,8 @@ while [[ -z "$CHOSEN_MENU" ]]; do
   dialog --backtitle "${SCRIPT_NAME}" --nocancel \
     --title "Main Menu" \
     --menu "" 0 0 0 \
-      "Basic Secure" "Install/Enable UFW (Firewall) and Fail2Ban + Setup UFW with simple rules" \
-      "Make sudo User (INTERACTIVE!)" "Check for existing sudo-users / Create sudo-user / Make user sudo'able" \
+      "Basic Secure (Automatic)" "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules" \
+      "Sudo-User Menu (Interactive)" "Check which user has sudo-priv. Add/Remove priviliges to/from user." \
       "exit" "." \
     2>"${TEMP_DIR}/mainmenu.chosen"
   CHOSEN_MENU=$(cat "${TEMP_DIR}/mainmenu.chosen")
@@ -28,12 +34,12 @@ case $CHOSEN_MENU in
   "exit")
     end_gracefully
     ;;
-  "Basic Secure")
+  "Basic Secure"*)
     . "${SCRIPT_DIR}/modules/basic_secure.sh"
+    call_module
     ;;
-  "Make sudo User (INTERACTIVE!)")
-#    . "${SCRIPT_DIR}/modules/make_sudoer.sh"
+  "Sudo"*)
     . "${SCRIPT_DIR}/modules/manage_sudoers.sh"
-
+    call_module
     ;;
 esac
