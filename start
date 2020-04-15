@@ -29,6 +29,7 @@ apt_get_without_interaction "install" "sudo \
     ffmpeg \
     ranger \
     exa \
+    tree \
     lolcat" | log_debug_output
 
 log_info "== (Unattended) Install of 'gimmick' Tools available in the default debian-buster repository..."
