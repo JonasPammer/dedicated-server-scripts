@@ -36,7 +36,7 @@ set_permitrootlogin_enabled(){
 
   set +e
   log_info "== Uncommenting PermitRootLogin..."
-  uncomment_lines_of_file "PermitRootLogin " "${SSHD_CONFIG_FILE}"
+  uncomment_lines_of_file "PermitRootLogin" "${SSHD_CONFIG_FILE}"
 
   log_info "== Setting PermitRootLogin to ${1}..."
   if [[ "${1}" = "yes" ]]; then

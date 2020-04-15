@@ -49,5 +49,5 @@ comment_lines_of_file(){
 #   2 - Path to File to affect
 #######################################
 uncomment_lines_of_file(){
-  sed -i "$1"' s/^#//' "$2"
+  sed -i "/^#$1"' /s/^#//' "$2"
 }
