@@ -15,7 +15,6 @@ call_module(){
       log_info "= Checking if script got run by the ACTUAL 'root' itself..."
       echo "TODO"
 
-
       set_permitrootlogin_enabled "no"
       ;;
   esac
