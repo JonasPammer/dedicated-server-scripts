@@ -13,7 +13,7 @@ call_module(){
       ;;
     "disable"|"off"|"no")
       log_info "= Checking if script got run by the ACTUAL 'root' itself..."
-      if [[ "${USER}" = "root" ]]; then
+      if [[ "$(echo "${HOME}")" = "/root" ]]; then
         log_error "Please log out of root and log into an other sudo-user! Aborting..."
         return 1
       fi
