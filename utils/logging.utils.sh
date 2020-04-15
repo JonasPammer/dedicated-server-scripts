@@ -2,9 +2,6 @@
 #
 # @author PixelTutorials
 #
-set -eo pipefail
-check_is_utils_initialized
-
 # VARIABLES
 #======================================
 export LOG_FILES_DIR="${SCRIPT_DIR}/.logs/";
