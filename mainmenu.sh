@@ -7,6 +7,7 @@
 #
 set -eo pipefail
 check_is_utils_initialized
+source_utils "permitrootlogin"
 
 # clear last selection
 read -p "Press Enter to continue..."
@@ -21,6 +22,16 @@ while [[ -z "$CHOSEN_MENU" ]]; do
                  "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
   menu_builder+=("exit" \
                  ".")
+
+  set +e # Do NOT quit if the following EXIT-CODE is other than 0
+  if is_permitrootlogin_enabled; then
+    menu_builder+=("Disable PermitRootLogin" \
+                   ".")
+  else
+    menu_builder+=("Enable PermitRootLogin" \
+                   ".")
+  fi
+  set -e
 
   dialog --backtitle "${SCRIPT_NAME}" --nocancel \
     --title "Main Menu" \
@@ -44,5 +55,13 @@ case $CHOSEN_MENU in
   "Sudo"*)
     . "${SCRIPT_DIR}/modules/manage_sudoers.sh"
     call_module
+    ;;
+  "Disable PermitRootLogin"*)
+    . "${SCRIPT_DIR}/modules/toggle_permitrootlogin.sh"
+    call_module "off"
+    ;;
+  "Enable PermitRootLogin"*)
+    . "${SCRIPT_DIR}/modules/toggle_permitrootlogin.sh"
+    call_module "on"
     ;;
 esac
