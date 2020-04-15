@@ -26,9 +26,7 @@ ask_and_remove_chosen_user_from_sudo(){
     return
   fi
 
-  log_info "== Removing given user ${CHOSEN_USERNAME} from group 'sudo'..."
-  # See https://unix.stackexchange.com/questions/29570/how-do-i-remove-a-user-from-a-group#tab-top
-  gpasswd -d "${CHOSEN_USERNAME}" "sudo"
+  unmake_user_sudoer "${CHOSEN_USERNAME}"
 }
 
 ask_and_add_chosen_user_to_sudo(){

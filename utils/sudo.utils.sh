@@ -33,5 +33,15 @@ can_user_execute_sudo(){
 #######################################
 make_user_sudoer(){
   log_info "== Adding given user ${1} to group 'sudo'..."
-  usermod -aG "sudo" "${1}"
+  usermod -aG "sudo" "${1}" | log_debug_output
+}
+
+#######################################
+# Params:
+#   1 - The name of the user to take away sudo-privileges
+#######################################
+unmake_user_sudoer(){
+  log_info "== Removing given user ${1} to group 'sudo'..."
+  # See https://unix.stackexchange.com/questions/29570/how-do-i-remove-a-user-from-a-group#tab-top
+  gpasswd -d "${1}" "sudo" | log_debug_output
 }
