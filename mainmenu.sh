@@ -20,18 +20,19 @@ while [[ -z "$CHOSEN_MENU" ]]; do
                 "Check which user has sudo-priv. Add/Remove priviliges to/from user.")
   menu_builder+=("Basic Secure (Automatic)" \
                  "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
-  menu_builder+=("exit" \
-                 ".")
 
   set +e # Do NOT quit if the following EXIT-CODE is other than 0
   if is_permitrootlogin_enabled; then
-    menu_builder+=("Disable PermitRootLogin" \
+    menu_builder+=("Disable PermitRootLogin (Automatic)" \
                    ".")
   else
-    menu_builder+=("Enable PermitRootLogin" \
+    menu_builder+=("Enable PermitRootLogin (Automatic)" \
                    ".")
   fi
   set -e
+
+  menu_builder+=("exit" \
+                 ".")
 
   dialog --backtitle "${SCRIPT_NAME}" --nocancel \
     --title "Main Menu" \
