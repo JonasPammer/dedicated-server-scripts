@@ -14,10 +14,10 @@ user@host /var/pixeltutorials-root_server-scripts $ git remote add origin https:
 Update:
 ```bash
 # Always get newest and overwrite any local changes
-user@host /var/pixeltutorials-root_server-scripts $ git fetch --all
-user@host /var/pixeltutorials-root_server-scripts $ git reset --hard
+user@host /var/pixeltutorials-root_server-scripts $ sudo git fetch --all
+user@host /var/pixeltutorials-root_server-scripts $ sudo git reset --hard
 # Pull
-user@host /var/pixeltutorials-root_server-scripts $ git pull origin master
+user@host /var/pixeltutorials-root_server-scripts $ sudo git pull origin master
 # Enter Personal Access Token (when using 2FA) or password...
 ```
 

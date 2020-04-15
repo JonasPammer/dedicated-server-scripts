@@ -16,7 +16,7 @@ call_module(){
       # See https://serverfault.com/a/568628 - when running using sudo-command, 4 new environment-variables get injected into the current context.
       # At the start of the script we check if the script got run with superuser privileges. (= either sudo or as just when normally logged in as "root")
       # If no SUDO_-Variables got injected, or if the injected SUDO_USER equals "root", abort.
-      if [[ ! -z "${SUDO_USER}" ]] || [[ "${SUDO_USER}" = "root" ]]; then
+      if [[ -z "${SUDO_USER}" ]] || [[ "${SUDO_USER}" = "root" ]]; then
         log_error "Please log out of root and log into an other sudo-user! Aborting..."
         return 1
       fi
