@@ -4,7 +4,7 @@
 #
 set -eo pipefail
 check_is_utils_initialized
-source_utils "files"
+source_utils "file"
 
 declare -r SSHD_CONFIG_FILE="/etc/ssh/sshd_config"
 
