@@ -6,6 +6,7 @@ set -eo pipefail
 check_is_utils_initialized
 
 #######################################
+# It copies the given file "$1" to "$1.bak", but only if it doesn't already exist and the given file can be read and isn't empty
 #
 # Parameters:
 #   1 - Path to file
