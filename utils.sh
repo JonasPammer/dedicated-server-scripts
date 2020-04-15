@@ -6,6 +6,14 @@
 # @author PixelTutorials
 #
 
+# Check if running as superuser (root)
+if [[ "$EUID" -ne 0 ]]; then
+#  log_error "Please run the script as root."
+  echo "PLEASE RUN THE SCRIPT AS SUPER-USER (Using 'sudo ./start')."
+#  backup_log
+  exit 1
+fi
+
 if [[ -z "${SCRIPT_DIR}" ]]; then
   export SCRIPT_DIR="$(pwd)"
 fi

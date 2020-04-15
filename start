@@ -12,14 +12,6 @@ mkdir -p "${TEMP_DIR}"
 #mktemp -d "${TEMP_DIR}"
 trap end_sigint SIGINT
 
-# TODO check if this also accepts if the script gets run from another user using sudo
-# Check if running as root
-if [[ "$EUID" -ne 0 ]]; then
-  log_error "Please run the script as root."
-  backup_log
-  exit 1
-fi
-
 log_info "= Make sure programs I always need are installed"
 log_info "== (Unattended) Refresh APT-Sources"
 apt_get_without_interaction "update" | log_debug_output
@@ -43,7 +35,11 @@ log_info "== (Unattended) Install of 'gimmick' Tools available in the default de
 apt_get_without_interaction "install" "cmatrix" | log_debug_output
 
 
-
+log_info "== Creating aliases..."
+alias l='ls -CF'
+alias la='ls -A'
+alias ll='ls -alF'
+alias ls='ls --color=auto'
 
 log_info "= Starting mainmenu-loop"
 while :

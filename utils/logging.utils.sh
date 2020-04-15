@@ -2,7 +2,6 @@
 #
 # @author PixelTutorials
 #
-
 # VARIABLES
 #======================================
 export LOG_FILES_DIR="${SCRIPT_DIR}/.logs/";

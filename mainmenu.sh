@@ -5,11 +5,9 @@
 #
 # @author PixelTutorials
 #
-
-# import global utils
-source "${SCRIPT_DIR}/utils.sh"
 set -eo pipefail
 check_is_utils_initialized
+source_utils "permitrootlogin"
 
 # clear last selection
 read -p "Press Enter to continue..."
@@ -17,12 +15,29 @@ CHOSEN_MENU=""
 # Loop until any selection has been made
 while [[ -z "$CHOSEN_MENU" ]]; do
 
+  menu_builder=()
+  menu_builder+=("Sudo-User Menu (Interactive)" \
+                "Check which user has sudo-priv. Add/Remove priviliges to/from user.")
+  menu_builder+=("Basic Secure (Automatic)" \
+                 "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
+
+  set +e # Do NOT quit if the following EXIT-CODE is other than 0
+  if is_permitrootlogin_enabled; then
+    menu_builder+=("Disable PermitRootLogin (Automatic)" \
+                   ".")
+  else
+    menu_builder+=("Enable PermitRootLogin (Automatic)" \
+                   ".")
+  fi
+  set -e
+
+  menu_builder+=("exit" \
+                 ".")
+
   dialog --backtitle "${SCRIPT_NAME}" --nocancel \
     --title "Main Menu" \
     --menu "" 0 0 0 \
-      "Basic Secure (Automatic)" "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules" \
-      "Sudo-User Menu (Interactive)" "Check which user has sudo-priv. Add/Remove priviliges to/from user." \
-      "exit" "." \
+      "${menu_builder[@]}" \
     2>"${TEMP_DIR}/mainmenu.chosen"
   CHOSEN_MENU=$(cat "${TEMP_DIR}/mainmenu.chosen")
 
@@ -41,5 +56,13 @@ case $CHOSEN_MENU in
   "Sudo"*)
     . "${SCRIPT_DIR}/modules/manage_sudoers.sh"
     call_module
+    ;;
+  "Disable PermitRootLogin"*)
+    . "${SCRIPT_DIR}/modules/toggle_permitrootlogin.sh"
+    call_module "off"
+    ;;
+  "Enable PermitRootLogin"*)
+    . "${SCRIPT_DIR}/modules/toggle_permitrootlogin.sh"
+    call_module "on"
     ;;
 esac

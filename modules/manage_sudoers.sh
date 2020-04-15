@@ -5,8 +5,6 @@
 #
 # @author PixelTutorials
 #
-
-source "${SCRIPT_DIR}/utils.sh"
 set -eo pipefail
 check_is_utils_initialized
 source_utils "sudo"

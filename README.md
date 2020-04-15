@@ -2,7 +2,7 @@
 First Checkout:
 ```bash
 # Make sure sudo is installed (or at least running as root):
-user@host $ apt install sudo -y
+user@host $ apt install sudo git -y
 # Make & Go into the directory in which the downloaded repo to live in:
 user@host $ sudo mkdir -p /var/pixeltutorials-root_server-scripts/ && cd /var/pixeltutorials-root_server-scripts/
 
