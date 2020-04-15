@@ -43,7 +43,11 @@ log_info "== (Unattended) Install of 'gimmick' Tools available in the default de
 apt_get_without_interaction "install" "cmatrix" | log_debug_output
 
 
-
+log_info "== Creating aliases..."
+alias l='ls -CF'
+alias la='ls -A'
+alias ll='ls -alF'
+alias ls='ls --color=auto'
 
 log_info "= Starting mainmenu-loop"
 while :
