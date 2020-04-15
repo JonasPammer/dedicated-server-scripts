@@ -6,6 +6,7 @@
         <option value="SCRIPT_DIR" />
         <option value="SCRIPT_NAME" />
         <option value="TEMP_DIR" />
+        <option value="USER" />
       </set>
     </option>
   </component>

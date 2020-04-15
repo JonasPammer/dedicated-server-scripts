@@ -35,6 +35,17 @@ apt_get_without_interaction "install" "sudo \
 log_info "== (Unattended) Install of 'gimmick' Tools available in the default debian-buster repository..."
 apt_get_without_interaction "install" "cmatrix" | log_debug_output
 
+log_info "== Checking if sdkman is installed for user ${USER}..."
+if hash sdk 2>/dev/null; then
+  log_debug "== SDKMan! already installed:"
+  sdk version | log_info
+else
+  # https://sdkman.io/install
+  log_info "== (Unattended) Install of sdkman..."
+  curl -s "https://get.sdkman.io?rcupdate=false" | bash | log_debug_output
+  source "${HOME}/.sdkman/bin/sdkman-init.sh" | log_debug_output
+  sdk version | log_info
+fi
 
 log_info "== Creating aliases..."
 alias l='ls -CF'
