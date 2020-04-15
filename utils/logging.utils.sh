@@ -2,6 +2,8 @@
 #
 # @author PixelTutorials
 #
+set -eo pipefail
+check_is_utils_initialized
 
 # VARIABLES
 #======================================

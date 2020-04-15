@@ -5,9 +5,6 @@
 #
 # @author PixelTutorials
 #
-
-# import global utils
-source "${SCRIPT_DIR}/utils.sh"
 set -eo pipefail
 check_is_utils_initialized
 
@@ -17,12 +14,18 @@ CHOSEN_MENU=""
 # Loop until any selection has been made
 while [[ -z "$CHOSEN_MENU" ]]; do
 
+  menu_builder=()
+  menu_builder+=("Sudo-User Menu (Interactive)" \
+                "Check which user has sudo-priv. Add/Remove priviliges to/from user.")
+  menu_builder+=("Basic Secure (Automatic)" \
+                 "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
+  menu_builder+=("exit" \
+                 ".")
+
   dialog --backtitle "${SCRIPT_NAME}" --nocancel \
     --title "Main Menu" \
     --menu "" 0 0 0 \
-      "Basic Secure (Automatic)" "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules" \
-      "Sudo-User Menu (Interactive)" "Check which user has sudo-priv. Add/Remove priviliges to/from user." \
-      "exit" "." \
+      "${menu_builder[@]}" \
     2>"${TEMP_DIR}/mainmenu.chosen"
   CHOSEN_MENU=$(cat "${TEMP_DIR}/mainmenu.chosen")
 
