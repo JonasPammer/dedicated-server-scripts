@@ -16,26 +16,31 @@ call_module(){
 }
 
 install_ufw() {
-  log_info "== Install UFW"
+  log_info "= Install UFW"
+  log_info "== (Unattended) Installing UFW from the default Debian-Buster repository..."
   apt_get_without_interaction "install" "ufw" | log_debug_output
 }
 
 setup_ufw(){
-  log_info "== Allowing Basic Ports (22, 80, 443, 10000)"
-  ufw allow 22 | log_debug_output # SSH (and therefore also SFTP)
-  ufw allow 80 | log_debug_output # HTTP
-  ufw allow 443 | log_debug_output # HTTPS
-  ufw allow 10000 | log_debug_output # Webmin
+  log_info "= Setup UFW"
+  log_info "== Allowing Basic Ports (22/tcp, 80, 443/tcp, 10000/tcp)..."
+  ufw allow "OpenSSH" | log_debug_output # 22/tcp (SSH)
+  ufw allow "WWW Full" | log_debug_output # 80 (HTTP), 443/tcp (HTTPS)
+  ufw allow "10000/tcp" | log_debug_output # Webmin
 
-  log_info "== Set default 'outgoing'-rule to 'allow'"
+  log_info "== Setting default 'outgoing'-rule to 'allow'..."
   ufw default allow outgoing | log_debug_output
+
+  log_info "== Force-Enabling UFW..."
+  ufw --force enable
 }
 
 install_fail2ban() {
-  log_info "== Install Fail2Ban"
+  log_info "= Install, auto-enable and start Fail2Ban"
+  log_info "== (Unattended) Installing Fail2Ban from the default Debian-Buster repository..."
   apt_get_without_interaction "install" "fail2ban" | log_debug_output
 
-  log_info "== Enable & Start Fail2Ban"
+  log_info "== Enabling & Starting Fail2Ban..."
   systemctl enable fail2ban | log_debug_output
   systemctl start fail2ban | log_debug_output
 }

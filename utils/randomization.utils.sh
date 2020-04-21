@@ -6,16 +6,17 @@ set -eo pipefail
 check_is_utils_initialized
 
 #######################################
+# Params:
+#   1 - Length of the password. Defaults to 16 if no parameter has been given.
 # Echo's:
 #   A random, 16-character-long string consisting of lower/upper-case characters and digits
 #######################################
 generate_password() {
-  local -r length="${1:-16}"
-  local password=''
-  until echo "$password" | grep '[[:lower:]]' | grep '[[:upper:]]' | grep -q '[[:digit:]]'; do
-    password="$(tr -cd '[:alnum:][:digit:]' < /dev/urandom | head -c "$length")"
-  done
-  echo "$password"
+  length=$1
+  if [[ -z "$length" ]]; then
+    length=16
+  fi
+  echo "$(pwgen -ys ${length} 1)"
 }
 
 #######################################

@@ -1,0 +1,105 @@
+/* Grid and list view stylings ************************************************/
+
+table {
+    .titlerow, .titlerow td, .titlerow th {
+        background: none;
+        border-color: @page-bg;
+        border-bottom: 1px solid @page-border-standard-color;
+        @title-font-size: 20px;
+        @headings-font-weight: 300;
+    }
+}
+
+.detail-view, .list-view  {
+    td, th {
+        vertical-align: middle !important;
+    }
+
+    tr:before {
+        content: "";
+        display: block;
+        height: @input-height-base + (@table-cell-padding * 2);
+    }
+
+    .hintRow {
+        width: @detailview-help-colwidth;
+
+        a {
+            display: inline-block;
+            width: 1.5em;
+            height: 1.5em;
+            border: 1px solid #eee;
+            font-size: @detailview-help-size;
+            line-height: 1.25em;
+            border-radius: 50%;
+            cursor: pointer;
+            text-align: center;
+            padding-left: 1px;
+        }
+    }
+
+    .btn {
+        max-width: @detailview-btn-max-width;
+        margin: 0 auto;
+    }
+
+    td.default {
+        color: @page-muted-color;
+        width: 15%;
+    }
+
+    .summary {
+        font-size: 0.8em;
+        color: @page-muted-color;
+        margin: -5px 0 5px;
+    }
+
+    .errorMessage {
+        margin-bottom: 0;
+    }
+
+    .display-sub {
+        text-align: center;
+        background: @page-bg;
+        font-size: 1.4em;
+        font-weight: 400;
+        color: @page-light-text-color;
+
+        small {
+            font-size: 0.6em;
+            color: @brand-primary;
+        }
+    }
+
+    .display-upper {
+        text-align: center;
+    }
+}
+
+.grid-view .summary {
+    float: right;
+    font-size: 0.8em;
+}
+
+/* Table sorter ***************************************************************/
+
+.sorter {
+    color: #999;
+    margin: -2em 0 0 0;
+    text-align: right;
+
+    a {
+        display: inline-block;
+        padding: 5px;
+    }
+
+    ul {
+        display: inline;
+        padding: 0;
+    }
+
+    li {
+        list-style-type: none;
+        display: inline;
+    }
+}

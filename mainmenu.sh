@@ -25,8 +25,6 @@ else
     menu_builder=()
     menu_builder+=("Sudo-User Menu (Interactive)" \
                   "Check which user has sudo-priv. Add/Remove priviliges to/from user.")
-    menu_builder+=("Basic Secure (Automatic)" \
-                   "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
 
     set +e # Do NOT quit if the following EXIT-CODE is other than 0
     if is_permitrootlogin_enabled; then
@@ -37,6 +35,25 @@ else
                      ".")
     fi
     set -e
+
+    if hash ufw 2>/dev/null; then
+      menu_builder+=("(Re-Run) Basic Secure (Automatic)" \
+                     "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
+    else
+      menu_builder+=("Basic Secure (Automatic)" \
+                     "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
+    fi
+
+    if [[ -d "/usr/share/phpmyadmin/" ]]; then
+      menu_builder+=("(Re-Run) Install & Configure LAMPP (Semi-Automatic)" \
+                     "(Install Apache2, MariaDB, PHP and PHPMyAdmin) + Configure/Setup PHPMyAdmin")
+    else
+      menu_builder+=("Install & Configure LAMPP (Semi-Automatic)" \
+                     "(Install Apache2, MariaDB, PHP and PHPMyAdmin) + Configure/Setup PHPMyAdmin")
+    fi
+
+    menu_builder+=("Install Multicraft" \
+                   ".")
 
     menu_builder+=("exit" \
                    ".")
@@ -57,14 +74,17 @@ case $CHOSEN_MENU in
   "exit")
     end_gracefully
     ;;
-  "Basic Secure"*|"basic_secure")
+
+  *"Basic Secure"*|"basic_secure")
     . "${SCRIPT_DIR}/modules/basic_secure.sh"
     call_module
     ;;
+
   "Sudo"*|"manage_sudoers")
     . "${SCRIPT_DIR}/modules/manage_sudoers.sh"
     call_module
     ;;
+
   "Disable PermitRootLogin"*|"disable_permitrootlogin")
     . "${SCRIPT_DIR}/modules/toggle_permitrootlogin.sh"
     call_module "off"
@@ -72,5 +92,32 @@ case $CHOSEN_MENU in
   "Enable PermitRootLogin"*|"enable_permitrootlogin")
     . "${SCRIPT_DIR}/modules/toggle_permitrootlogin.sh"
     call_module "on"
+    ;;
+
+  "(Re-Run) Install & Configure LAMPP"*)
+    # Ask if he really wants to install the complete LAMPP-Stack again
+    set +e # Do NOT quit if the following EXIT-CODE is other than 0
+    dialog --backtitle "${SCRIPT_NAME}" --title "'/usr/share/phpmyadmin/' already exists" \
+      --yesno "Do you really want to start the installation and configuration-procedure again?" 0 0
+    dialog_response=$?
+    set -e
+
+    if [[ "${dialog_response}" -ne 0 ]]; then # no or ESC
+      log_debug "=== Returning back to main-menu..."
+      return
+    fi
+
+    . "${SCRIPT_DIR}/modules/install_lampp.sh"
+    call_module
+    ;;
+
+  "Install & Configure LAMPP"*|"install_configure_lampp")
+    . "${SCRIPT_DIR}/modules/install_lampp.sh"
+    call_module
+    ;;
+
+  *"Multicraft"*)
+    . "${SCRIPT_DIR}/modules/multicraft.sh"
+    call_module
     ;;
 esac

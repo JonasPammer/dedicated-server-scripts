@@ -3,8 +3,35 @@
   <component name="BashSupportProjectSettings">
     <option name="globalVariables">
       <set>
+        <option value="MC_CREATE_USER" />
+        <option value="MC_DAEMON_ID" />
+        <option value="MC_DAEMON_IP" />
+        <option value="MC_DAEMON_PORT" />
+        <option value="MC_DAEMON_PW" />
+        <option value="MC_DB_HOST" />
+        <option value="MC_DB_NAME" />
+        <option value="MC_DB_PASS" />
+        <option value="MC_DB_USER" />
+        <option value="MC_DIR" />
+        <option value="MC_DIR_OVERWRITE" />
+        <option value="MC_FTP_EXTERNAL_IP" />
+        <option value="MC_FTP_IP" />
+        <option value="MC_FTP_PORT" />
+        <option value="MC_FTP_SERVER" />
+        <option value="MC_KEY" />
+        <option value="MC_LOCAL" />
+        <option value="MC_MULTIUSER" />
+        <option value="MC_PLUGINS" />
+        <option value="MC_USER" />
+        <option value="MC_WEB_DIR" />
+        <option value="MC_WEB_DIR_OVERWRITE" />
+        <option value="MC_WEB_USER" />
+        <option value="OVERWRITE_CONF" />
         <option value="SCRIPT_DIR" />
         <option value="SCRIPT_NAME" />
+        <option value="SETTING" />
+        <option value="SQL_SERVER_ADMIN_MAINTENANCE_USERNAME" />
+        <option value="START_INSTALL" />
         <option value="TEMP_DIR" />
         <option value="USER" />
       </set>

@@ -14,11 +14,11 @@ check_is_utils_initialized
 backup_file_if_not_already_backed_up(){
   # Check if file exists , read permission is granted and size is greater than zero
   if [[ -r "$1" ]] && [[ -s "$1" ]]; then
-    # Check if Backup hasn't already been created
+    # Check if Backup-File hasn't already been created
     if [[ ! -r "$1.bak" ]]; then
       # Do Backup
       log_info "== Backing up file $1"
-      cp "$1" "$1.bak" | log_debug_output
+      cp -a "$1" "$1.bak" | log_debug_output
     fi
   fi
 }

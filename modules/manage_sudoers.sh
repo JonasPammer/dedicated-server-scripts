@@ -8,6 +8,7 @@
 set -eo pipefail
 check_is_utils_initialized
 source_utils "sudo"
+source_utils "mysql"
 
 CHOSEN_USERNAME=""
 
@@ -19,7 +20,7 @@ ask_and_remove_chosen_user_from_sudo(){
   dialog --backtitle "${SCRIPT_NAME}" --title "CONFIRM REMOVAL OF GROUP 'sudo'" \
     --yesno "REMOVE user '${CHOSEN_USERNAME}' from group 'sudo'?" 0 0
   local -r dialog_response=$?
-  set -e # Revert to normally-wanted behaviour (Exit immediately if something goes wrong)
+  set -e
 
   if [[ "${dialog_response}" -ne 0 ]]; then # no or ESC
     log_debug "=== Returning back to main-menu..."
@@ -82,13 +83,13 @@ call_module(){
     "CREATE"*)
       log_info "== User chose to CREATE a new user. Prompting for username..."
       dialog --backtitle "${SCRIPT_NAME}" --title "Please provide a name for the new User" \
-        --inputbox "" 0 0 "furrynator" \
+        --inputbox "" 0 0 "${SQL_SERVER_ADMIN_MAINTENANCE_USERNAME}" \
         2>"${TEMP_DIR}/sudo_user-provided_name.choice"
 
       local -r name_of_user_to_create=$(cat "${TEMP_DIR}/sudo_user-provided_name.choice")
 
       ## Check if given username already exists
-      log_debug "== Checking if given user '${name_of_user_to_create}' already exists..."
+      log_debug "== Check if given user '${name_of_user_to_create}' already exists..."
       if getent passwd "$name_of_user_to_create" >/dev/null; then
         log_info "=== Given User '${name_of_user_to_create}' does exist. No need to create... "
       else

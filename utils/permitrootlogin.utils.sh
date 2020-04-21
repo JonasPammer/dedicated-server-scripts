@@ -23,6 +23,7 @@ is_permitrootlogin_enabled(){
 
 #######################################
 # Uncomments and sets SSHd's "PermitRootLogin"-Config-Value to the given value
+#
 # Globals used:
 #   SSHD_CONFIG_FILE  -  Path to the sshd_config-file of the system
 # Params:
@@ -46,7 +47,7 @@ set_permitrootlogin_enabled(){
   fi
 
   log_info "== PermitRootLogin: $(is_permitrootlogin_enabled)"
-  se -e
+  set -e
 }
 
 #######################################

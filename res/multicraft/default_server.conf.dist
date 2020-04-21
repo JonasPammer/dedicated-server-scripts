@@ -1,0 +1,8 @@
+##
+## !! Rename to default_server.conf before making changes to this file !!
+##
+## This file will be loaded to set the default values for each setting
+## available in a normal server conf file.
+## For example the command line used if nothing is defined:
+[start]
+command = "{JAVA}" -Xmx{MAX_MEMORY}M -Xms{START_MEMORY}M -jar "{JAR}" nogui

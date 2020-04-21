@@ -26,3 +26,9 @@ Usage:
 user@host /var/pixeltutorials-root_server-scripts $ chmod +x start
 user@host /var/pixeltutorials-root_server-scripts $ sudo ./start
 ```
+
+
+## Note on Multicraft
+Manually changed files:
+* `multicraft.conf.dist`
+* `panel/protected/controllers/DaemonController.php`
