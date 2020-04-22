@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# @author (Most parts copied from my version of installimage, which was in-turn originally written by Hetzner)
-# Comment by me: The substition ${variable//\'/\\\'} makes sure to escape any "'" with "\'", preventing SQL-Injections
+# @author PixelTutorials
+# Comment: The substition ${variable//\'/\\\'} makes sure to escape any "'" with "\'", preventing SQL-Injections
 #
 set -eo pipefail
 check_is_utils_initialized
@@ -22,7 +22,8 @@ is_mysqldaemon_running() {
 
 #######################################
 # Makes sure mysql is started using `start_mysql_if_stopped_and_wait`, and then
-# stops mysql-service using systemctl. Finishes when is_mysqldaemon_running returns 1 (false).
+# stops mysql.service.
+# Finishes when `is_mysqldaemon_running` returns 1 (false).
 #######################################
 stop_mysqldaemon_and_wait() {
   start_mysql_if_stopped_and_wait || return 1
@@ -36,7 +37,7 @@ stop_mysqldaemon_and_wait() {
 
 #######################################
 # Return's:
-#   1 (false) if the pgrep-command failed
+#   1 (false) if the pgrep-command failed to locate a process with the name of "mysql"
 #######################################
 is_mysqlserver_running() {
   up=$(pgrep mysql | wc -l);
@@ -48,8 +49,11 @@ is_mysqlserver_running() {
 }
 
 #######################################
-# If MySQL's Server or Deamon isn't running, it tries to start mysql up again using systemctl
-# Finishes when is_mysqlserver_running returns 0 (true).
+# Tries to start mysql using systemctl if either the Server or Daemon aren't running.
+# Finishes when `is_mysqlserver_running` returns 0 (true).
+#
+# Return's:
+#   1 (false) if `systemctl start` failed
 #######################################
 start_mysql_if_stopped_and_wait() {
   if ! is_mysqlserver_running || ! is_mysqldaemon_running; then
@@ -63,8 +67,8 @@ start_mysql_if_stopped_and_wait() {
 }
 
 #######################################
-# Makes sure mysql is started using `start_mysql_if_stopped_and_wait`, and then
-# stops mysql using systemctl. Finishes when is_mysqlserver_running returns 1 (false).
+# Makes sure mysql is started using `start_mysql_if_stopped_and_wait` and then stops mysql using systemctl.
+# Finishes when `is_mysqlserver_running` returns 1 (false).
 #######################################
 stop_mysqlserver_and_wait() {
   start_mysql_if_stopped_and_wait || return 1
@@ -82,7 +86,7 @@ stop_mysqlserver_and_wait() {
 # Params:
 #   @ - SQL-Query to inject
 # Return's:
-#   1 if start_mysql exited with an error (returned 1), otherwise the PIPESTATUS from the executed mysql-command
+#   1 if `start_mysql_if_stopped_and_wait` exited with an error (returned 1), otherwise the PIPESTATUS from the executed mysql-command
 #######################################
 query_mysql() {
   start_mysql_if_stopped_and_wait || return 1
@@ -96,6 +100,8 @@ query_mysql() {
 #
 # Params:
 #   @ - SQL-Query to inject
+# Return's:
+#   1 if `start_mysql_if_stopped_and_wait` exited with an error (returned 1)
 # Echo's:
 #   The output of the executed mysql-command
 #######################################
@@ -151,14 +157,15 @@ get_mysql_password_fieldname() {
 
 #######################################
 # Finds out the password_field of the "mysql.user" table,
-# updates password_last_changed to the current and $password_field to the provided one,
-# and flushes privileges so the changes imminently take affect.
+# changes its value,
+# flushes the privileges (so the changes imminently take affect) and
+# makes a useless query with the given credentials to make sure everything worked.
 #
 # Params:
 #   1 - SQL username
 #   2 - new password
 # Return's:
-#   1 if start_mysql exited with an error (aka. returned 1), otherwise the PIPESTATUS from the executed mysql-commands
+#   1 if any of the executed SQL-Queries failed.
 #######################################
 set_mysql_password() {
   log_info "== Set mysql-password of user ${1}..."
@@ -184,7 +191,7 @@ set_mysql_password() {
 # Params:
 #   1 - SQL username
 # Return's:
-#   0 if the SQL-Query didn't return nothing. 1 if one of the executed mysql-commands failed (= User doesn't exist)
+#   1 if `does_mysql_user_exist` failed (= User doesn't exist). 0 if the query wasn't empty.
 #######################################
 has_mysql_password() {
   log_info "== Check if mysql-user '${1}' has password..."

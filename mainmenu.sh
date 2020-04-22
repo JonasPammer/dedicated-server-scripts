@@ -117,7 +117,7 @@ case $CHOSEN_MENU in
     ;;
 
   *"Multicraft"*)
-    . "${SCRIPT_DIR}/modules/multicraft.sh"
+    . "${SCRIPT_DIR}/modules/install_multicraft.sh"
     call_module
     ;;
 esac

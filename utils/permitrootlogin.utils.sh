@@ -51,7 +51,6 @@ set_permitrootlogin_enabled(){
 }
 
 #######################################
-# Uses `service` to restart ssh.
 # Used to take affect of the changes made to the config.
 #######################################
 restart_ssh_service(){

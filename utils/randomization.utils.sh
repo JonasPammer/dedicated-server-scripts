@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# @author (Most parts copied from my version of installimage, which was in-turn originally written by Hetzner)
+# @author PixelTutorials
 #
 set -eo pipefail
 check_is_utils_initialized
@@ -12,10 +12,7 @@ check_is_utils_initialized
 #   A random, 16-character-long string consisting of lower/upper-case characters and digits
 #######################################
 generate_password() {
-  length=$1
-  if [[ -z "$length" ]]; then
-    length=16
-  fi
+  length=${1:-16}
   echo "$(pwgen -ys ${length} 1)"
 }
 

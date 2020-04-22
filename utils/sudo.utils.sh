@@ -7,7 +7,7 @@ check_is_utils_initialized
 
 #######################################
 # If this script runs as sudo, it executes the given command using a "reverse sudo" (using sudo and providing the variable SUDO_USER as it's "user" (-u) argument)
-# Otherwise, it gets executed under user "root".
+# Otherwise, it gets sudo'ed using the user "root".
 #
 # Params:
 #   * - Command to evaluate
@@ -22,8 +22,8 @@ execute_as_sudoing_user(){
 
 #######################################
 # See https://serverfault.com/a/568628 - when running using sudo-command, 4 new environment-variables get injected into the current context.
-# At the start of the script we check if the script got run with superuser privileges. (= either sudo or as just when normally logged in as "root")
-# But if one of these variables do exist, it means that this script is being run using sudo.
+# At the start of the script we make sure that the script got run with superuser privileges. (= either sudo or as just when normally logged in as "root")
+# If one of these variables do exist, it means that this script is being run using sudo.
 #
 # Returns:
 #   0 if variable SUDO_USER has been set.

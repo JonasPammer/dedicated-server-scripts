@@ -41,10 +41,17 @@ function askSave {
     fi
 }
 
+#######################################
+# Saves every exported variable that starts with `MC_` to the mentioned file, to be source'd at a later point.
+# Warning: Entered passwords also are included (in plain text!). (The function makes sure using chmod that only the user/its group can access the file)
+#
+# Globals used:
+#   CFG_FILE  -  Path of the file to save the variables to.
+#######################################
 function save {
-    echo -n "Saving settings to '$CFG_FILE'... "
-    export | grep ' MC_'  > "$CFG_FILE"
-    chmod o-rwx "$CFG_FILE"
+    echo -n "Saving settings to '${CFG_FILE}'... "
+    export | grep ' MC_'  > "${CFG_FILE}"
+    chmod o-rwx "${CFG_FILE}"
     echo "done"
     echo "IMPORTANT: Make sure this file is not accessible by unauthorized users."
     echo

@@ -1,10 +1,10 @@
 #!/bin/bash
 #
 # @author PixelTutorials
-# Installs Apache2, MariaDB-Server, PHP (and some recommended extensions) from the default Debian-Buster repository
-# Downloads PHPMyAdmin from the official Website,
-# dynamically generates its config.inc.php (including pma/blowfish-secrets),
-# dynamically generates a .htaccess and .htpasswd (including password)
+# Installs Apache2, MariaDB-Server, PHP (and some recommended extensions) from the default Debian-Buster repository,
+# checks if the sql-user SQL_SERVER_ADMIN_MAINTENANCE_USERNAME exists/got a password (and prompts the user for one if it doesn't),
+# asks to enable the default HTTPS/SSL-Configuration,
+# downloads PHPMyAdmin from the official Website, dynamically generates it's config.inc.php, .htaccess and .htpasswd.
 #
 
 set -eo pipefail
