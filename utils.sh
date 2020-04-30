@@ -10,7 +10,7 @@
 if [[ "$EUID" -ne 0 ]]; then
 #  log_error "Please run the script as root."
   echo "PLEASE RUN THE SCRIPT AS SUPER-USER (Using 'sudo ./start')."
-#  backup_log
+#  log_do_backup
   exit 1
 fi
 
@@ -58,7 +58,7 @@ dialog_pixeltutorials() {
 apt_get_without_interaction() {
 if [[ ! -z "${1}" ]]; then
   /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get ${1} -y -o Dpkg::Options::="--force-confdef" ${2}
-  return 0
+  return "${PIPESTATUS[0]}" # TODO does this work properly?
 fi
 return 1
 }
@@ -75,21 +75,21 @@ check_is_utils_initialized() {
 
 #######################################
 # Makes one last log that states that the program exited gracefully.
-# It then Backs up the latest-log-file using backup_log and exit's the program with code 0
+# It then Backs up the latest-log-file using log_do_backup and exit's the program with code 0
 #######################################
 end_gracefully() {
   log_info "Exiting gracefully! Backing up latest log and exiting with code 0..."
-  backup_log
+  log_do_backup
   exit 0
 }
 
 #######################################
 # Makes one last log that states that the program exited with the cause that the program has trapped a SIGINT-signal.
-# It then Backs up the latest-log-file using backup_log and exit's the program with code 0
+# It then Backs up the latest-log-file using log_do_backup and exit's the program with code 0
 #######################################
 end_sigint() {
   log_error "Exiting - SIGINT received/trapped! Backing up latest log and exiting with code 0..."
-  backup_log
+  log_do_backup
   exit 0
 }
 

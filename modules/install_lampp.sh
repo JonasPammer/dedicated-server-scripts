@@ -9,74 +9,9 @@
 
 set -eo pipefail
 check_is_utils_initialized
-source_utils "mysql"
-source_utils "randomization"
-source_utils "certificates"
+source_utils "lamp"
 
 PHPMYADMIN_VERSION_TO_INSTALL="4.9.5"
-
-install_lamp(){
-  log_info "= Start installation of Apache2, MariaDB-Server, PHP(+extensions) from the default Debian-Buster repository"
-  log_info "== (Unattended) Installing Apache2..."
-  apt_get_without_interaction "install" "apache2" | log_debug_output
-
-  log_info "== (Unattended) Installing MariaDB-Server..."
-  apt_get_without_interaction "install" "mariadb-server" | log_debug_output
-
-  log_info "== (Unattended) Installing PHP, including it's mods for apache2 and mysql..."
-  apt_get_without_interaction "install" "php libapache2-mod-php php-mysql php-pdo-sqlite" | log_debug_output
-
-  log_info "== Reloading Apache2..."
-  sudo systemctl reload apache2 | log_debug_output
-  sudo systemctl status apache2 | log_debug_output
-
-  log_info "= Start installation/configuration of PHPMyAdmin"
-  log_info "== (Unattended) Installing recommended PHP extensions for PHPMyAdmin..."
-  apt_get_without_interaction "install" "php-mbstring php-zip php-gd php-cgi php-mysqli php-pear php-gettext php-common php-phpseclib" | log_debug_output
-
-  log_info "== Making sure 'mcrypt' and 'mbstring'-modules are enabled"
-  phpenmod mcrypt
-  phpenmod mbstring
-}
-
-check_if_sql_admin_maintenance_user_exists_and_create(){
-  log_info "== Checking if SQL-User '${SQL_SERVER_ADMIN_MAINTENANCE_USERNAME}' exists (${_SQL_SERVER_ADMIN_MAINTENANCE_USERNAME_COMMENT})..."
-  if ! does_mysql_user_exist "${SQL_SERVER_ADMIN_MAINTENANCE_USERNAME}"; then
-    log_info "*** SQL-User '${SQL_SERVER_ADMIN_MAINTENANCE_USERNAME}' does not exist!"
-    while true; do
-      read -s -p "*** Please enter a password for the SQL-User '${SQL_SERVER_ADMIN_MAINTENANCE_USERNAME}': " given_password
-      echo
-      read -s -p "*** Please enter a password for the SQL-User '${SQL_SERVER_ADMIN_MAINTENANCE_USERNAME}' (again): " given_password2
-      echo
-
-      if [[ "$given_password" = "$given_password2" ]]; then
-        create_mysql_user_with_all_privileges "${SQL_SERVER_ADMIN_MAINTENANCE_USERNAME}" "${given_password}"
-        break
-      else
-       log_error "The given passwords weren't identical. Please try again."
-      fi
-    done
-  fi
-}
-
-ask_to_enable_default_https(){
-
-  set +e # Do NOT quit if the following EXIT-CODE is other than 0
-  dialog --backtitle "${SCRIPT_NAME}" --title "Enable default HTTPS Configuration" \
-    --yesno "Regenerate snakeoil-certificate and enable apache's default-ssl configuration?" 0 0
-  local -r dialog_response=$?
-  set -e
-
-  if [[ "${dialog_response}" -ne 0 ]]; then # no or ESC
-    log_debug "=== Returning back to main-menu..."
-    return
-  fi
-
-  log_info "= Re-Generate snakeoil-ssl-certificate"
-  regenerate_snakeoil_ssl_certificate | log_debug_output
-  log_info "= Enable Default SSL Apache2-Configuration which uses our (invalid - self generated) \"snakeoil\"-ssl-certificate"
-  enable_default_ssl_configuration | log_debug_output
-}
 
 install_and_dynamically_configure_phpmyadmin() {
   log_info "= Start installation and configuration of PHPMyAdminb v${PHPMYADMIN_VERSION_TO_INSTALL}"
@@ -98,14 +33,14 @@ install_and_dynamically_configure_phpmyadmin() {
   fi
 
   log_info "== Moving extracted folder to '/usr/share/phpmyadmin'..."
-  sudo mv -f "${TEMP_DIR}phpMyAdmin-${PHPMYADMIN_VERSION_TO_INSTALL}-all-languages/" /usr/share/phpmyadmin
+  mv -f "${TEMP_DIR}phpMyAdmin-${PHPMYADMIN_VERSION_TO_INSTALL}-all-languages/" /usr/share/phpmyadmin
 
   log_info "== Making directory '/var/lib/phpmyadmin/tmp' and setting 'www-data' as the owner (group and user)..."
   mkdir -p /var/lib/phpmyadmin/tmp
   chown -R www-data:www-data /var/lib/phpmyadmin
 
-  local -r generated_blowfish_secret="$(generate_password 32)"
-  local -r generated_pma_pw="$(generate_password 16)"
+  local -r generated_blowfish_secret="$(rand_generate_password_without_symbols 32)"
+  local -r generated_pma_pw="$(rand_generate_password_without_symbols 16)"
 
   log_info "== Generating phpMyAdmin-Configuration at '/usr/share/phpmyadmin/config.inc.php'..."
 cat << EOF > /usr/share/phpmyadmin/config.inc.php
@@ -291,13 +226,13 @@ cat << EOF > /usr/share/phpmyadmin/config.inc.php
 EOF
 
   # This SQL file contains all the commands needed to create the configuration storage database and tables phpMyAdmin needs to function correctly.
-  start_mysql_if_stopped_and_wait
+  sql_start_if_stopped_and_wait
   log_info "== Executing SQL-Queries from '/usr/share/phpmyadmin/sql/create_tables.sql'..."
-  sudo mariadb < /usr/share/phpmyadmin/sql/create_tables.sql
+  mariadb < /usr/share/phpmyadmin/sql/create_tables.sql
 
   log_info "== Dropping and Creating SQL-User 'pma' with all privileges..."
-  query_mysql "DROP USER 'pma'@'localhost';" || true
-  create_mysql_user_with_all_privileges "pma" "${generated_pma_pw}"
+  sql_make_query_and_return_exitcode "DROP USER 'pma'@'localhost';" || true
+  sql_create_user_and_grant_all_privileges "pma" "${generated_pma_pw}"
 
   # Configuring Apache to Serve phpMyAdmin
   log_info "== Generating apache2-Configuration to serve phpMyAdmin in '/etc/apache2/conf-available/phpmyadmin.conf'..."
@@ -366,7 +301,7 @@ Alias /phpmyadmin /usr/share/phpmyadmin
 EOF
 
   log_info "== Generating custom .htaccess '/usr/share/phpmyadmin/.htaccess'..."
-  local -r generated_htaccess_file="$(generate_password 16)"
+  local -r generated_htpasswd_password="$(rand_generate_password_without_symbols 16)"
 
 cat << EOF > /usr/share/phpmyadmin/.htaccess
 AuthType Basic
@@ -376,10 +311,10 @@ Require valid-user
 EOF
 
   log_info "== Generating .htpasswd '/usr/share/phpmyadmin/.htpasswd'..."
-  echo "*** Generated password: ${generated_htaccess_file}"
+  echo "*** Generated password: ${generated_htpasswd_password}"
   log_info "PLEASE NOTE/WRITE/REMEMBER THE ABOVE MENTIONED PASSWORD! Username is 'phpmyadmin'."
   read -p "Press Enter to continue..."
-  echo "${generated_htaccess_file}" | htpasswd -ic /usr/share/phpmyadmin/.htpasswd phpmyadmin
+  echo "${generated_htpasswd_password}" | htpasswd -ic /usr/share/phpmyadmin/.htpasswd phpmyadmin
 
   log_info "= Enabling phpmyadmin.conf and reloading apache to take immediate effect of changes made..."
   a2enconf phpmyadmin.conf | log_debug_output
@@ -389,9 +324,10 @@ EOF
 # Original Steps from https://www.digitalocean.com/community/tutorials/how-to-install-phpmyadmin-from-source-debian-10#step-4-—-securing-your-phpmyadmin-instance (Additionally recommended packages for phpMyAdmin from https://computingforgeeks.com/install-phpmyadmin-with-apache-on-debian-10-buster/)
 # (Converted into my script as an semi-automatic procedure)
 call_module(){
-  install_lamp
-  check_if_sql_admin_maintenance_user_exists_and_create
+  lamp_install
+  lamp_check_if_sql_admin_maintenance_user_exists_and_ask_to_create
   ask_to_enable_default_https
 
+  lamp_install_phpmyadmin_mods
   install_and_dynamically_configure_phpmyadmin
 }

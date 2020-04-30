@@ -19,7 +19,7 @@ backup_file_if_not_already_backed_up(){
     # Check if Backup-File hasn't already been created
     if [[ ! -r "$1.bak" ]]; then
       # Do Backup
-      log_info "== Backing up file $1"
+      log_info "== Backing up file '$1' to '$1.bak'"
       cp -a "$1" "$1.bak" | log_debug_output
     fi
   fi

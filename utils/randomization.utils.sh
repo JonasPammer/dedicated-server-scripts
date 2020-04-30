@@ -11,7 +11,12 @@ check_is_utils_initialized
 # Echo's:
 #   A random, 16-character-long string consisting of lower/upper-case characters and digits
 #######################################
-generate_password() {
+rand_generate_password_without_symbols() {
+  length=${1:-16}
+  echo "$(pwgen -s ${length} 1)"
+}
+
+rand_generate_password_with_symbols() {
   length=${1:-16}
   echo "$(pwgen -ys ${length} 1)"
 }
@@ -20,7 +25,7 @@ generate_password() {
 # Echo's:
 #   A random, 48-character-long string consisting of all Alphanumeric Characters and Digits
 #######################################
-generate_random_string() {
+rand_generate_long_string() {
   local -r length="${1:-48}"
   tr -cd '[:alnum:][:digit:]' < /dev/urandom | head -c "$length"
 }

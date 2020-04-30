@@ -14,7 +14,7 @@ check_is_utils_initialized
 #   3 - Message to ask. (Gets evaluated. Before evaluation, a variable "def" (see $2) gets injected)
 #   4 - Message to dispaly if given variable already exists. (Gets evaluated. Before evaluation, a variable "def" (see $2) gets injected)
 #######################################
-function ask {
+function mc_ask {
     if [ ! "`eval echo \\$$1`" = "" ]; then
         var="`eval echo \\$$1`"
         eval echo $4
@@ -34,10 +34,10 @@ function ask {
     fi
 }
 
-function askSave {
+function mc_ask_save_mc_values {
     read -p "Save entered settings? ([y]/n) "
     if [[ "$REPLY" != "n" ]]; then
-        save
+        mc_save_mc_values
     fi
 }
 
@@ -48,7 +48,7 @@ function askSave {
 # Globals used:
 #   CFG_FILE  -  Path of the file to save the variables to.
 #######################################
-function save {
+function mc_save_mc_values {
     echo -n "Saving settings to '${CFG_FILE}'... "
     export | grep ' MC_'  > "${CFG_FILE}"
     chmod o-rwx "${CFG_FILE}"
@@ -57,8 +57,8 @@ function save {
     echo
 }
 
-function quit {
-  askSave
+function mc_end_gracefully {
+  mc_ask_save_mc_values
   end_gracefully
   return
 }

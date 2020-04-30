@@ -14,7 +14,7 @@ export LOG_LATEST="${LOG_FILES_DIR}latest.log";
 # Echo's:
 #   The output of the used `date`-command
 #######################################
-get_formatted_log_date() {
+log_get_formatted_log_date() {
   echo "$(date +'%Y-%m-%dT%H:%M:%S')"
 }
 
@@ -24,7 +24,7 @@ get_formatted_log_date() {
 #   *   - Actual Text
 #######################################
 log_error() {
-  local -r line="[$(get_formatted_log_date) - ERROR]: $*"
+  local -r line="[$(log_get_formatted_log_date) - ERROR]: $*"
   echo "${line}" >>"${LOG_LATEST}"
   echo -e "\e[41m${line}\e[49m" >&2
 }
@@ -37,7 +37,7 @@ log_error() {
 #   *   - Actual Text
 #######################################
 log_info() {
-  local -r line="[$(get_formatted_log_date) - INFO]: $*"
+  local -r line="[$(log_get_formatted_log_date) - INFO]: $*"
   echo "${line}" >>"${LOG_LATEST}"
   if [[ -x "$(command -v /usr/games/lolcat)" ]]; then
     echo "${line}" | /usr/games/lolcat -a -d 6
@@ -54,7 +54,7 @@ log_info() {
 #   *   - Actual Text
 #######################################
 log_debug() {
-  local -r line="[$(get_formatted_log_date) - DEBUG]: $*"
+  local -r line="[$(log_get_formatted_log_date) - DEBUG]: $*"
   echo "${line}" >>"${LOG_LATEST}"
   echo "${line}"
 }
@@ -79,7 +79,7 @@ log_debug_output() {
 #   LOG_LATEST        -  Path of the latest log
 #   LOG_FILES_DIR  -  Path to the folder to store the dump/backup-file in
 #######################################
-backup_log() {
+log_do_backup() {
   local -r generated_backup_log_file=${LOG_FILES_DIR}$(date +'%Y-%m-%dT%H-%M-%S').log.bak
   log_info "Backing up ${LOG_LATEST} to ${generated_backup_log_file}..."
   cp "${LOG_LATEST}" "${generated_backup_log_file}"
@@ -92,7 +92,7 @@ backup_log() {
 #   LOG_LATEST        -  Path of the latest log
 #   LOG_FILES_DIR  -  Path to the folder to store the dump/backup-file in
 #######################################
-init_log() {
+log_do_init() {
   mkdir -p "${LOG_FILES_DIR}"#
   if [[ -f "${LOG_LATEST}" ]];
     then rm "${LOG_LATEST}"

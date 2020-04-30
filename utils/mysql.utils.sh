@@ -11,26 +11,29 @@ source_utils "randomization"
 SQL_SERVER_ADMIN_MAINTENANCE_USERNAME="furrynator"
 _SQL_SERVER_ADMIN_MAINTENANCE_USERNAME_COMMENT="SQL-User with all privileges that should be used if the Server-Administrator himself wants to do remote maintenance - phpMyAdmin root-login has been disabled!"
 
+
+
+
 #######################################
 # Return's:
 #   1 (false) if the mysqladmin-ping failed
 #######################################
-is_mysqldaemon_running() {
+sql_is_daemon_running() {
  mysqladmin ping &> /dev/null;
  return $?
 }
 
 #######################################
-# Makes sure mysql is started using `start_mysql_if_stopped_and_wait`, and then
+# Makes sure mysql is started using `sql_start_if_stopped_and_wait`, and then
 # stops mysql.service.
-# Finishes when `is_mysqldaemon_running` returns 1 (false).
+# Finishes when `sql_is_daemon_running` returns 1 (false).
 #######################################
-stop_mysqldaemon_and_wait() {
-  start_mysql_if_stopped_and_wait || return 1
+sql_stop_daemon_and_wait() {
+  sql_start_if_stopped_and_wait || return 1
 
   log_info "=== Stopping mysql-service (daemon)..."
   systemctl stop mysql.service || return 1
-  while is_mysqldaemon_running; do
+  while sql_is_daemon_running; do
     sleep 1
   done
 }
@@ -39,7 +42,7 @@ stop_mysqldaemon_and_wait() {
 # Return's:
 #   1 (false) if the pgrep-command failed to locate a process with the name of "mysql"
 #######################################
-is_mysqlserver_running() {
+sql_is_server_running() {
   up=$(pgrep mysql | wc -l);
   if [[ "$up" -ge 1 ]]; then
     return 0
@@ -50,63 +53,63 @@ is_mysqlserver_running() {
 
 #######################################
 # Tries to start mysql using systemctl if either the Server or Daemon aren't running.
-# Finishes when `is_mysqlserver_running` returns 0 (true).
+# Finishes when `sql_is_server_running` returns 0 (true).
 #
 # Return's:
 #   1 (false) if `systemctl start` failed
 #######################################
-start_mysql_if_stopped_and_wait() {
-  if ! is_mysqlserver_running || ! is_mysqldaemon_running; then
+sql_start_if_stopped_and_wait() {
+  if ! sql_is_server_running || ! sql_is_daemon_running; then
     log_info "=== Starting mysql..."
     systemctl start mysql || return 1
   fi
 
-  until is_mysqlserver_running; do
+  until sql_is_server_running; do
     sleep 1
   done
 }
 
 #######################################
-# Makes sure mysql is started using `start_mysql_if_stopped_and_wait` and then stops mysql using systemctl.
-# Finishes when `is_mysqlserver_running` returns 1 (false).
+# Makes sure mysql is started using `sql_start_if_stopped_and_wait` and then stops mysql using systemctl.
+# Finishes when `sql_is_server_running` returns 1 (false).
 #######################################
-stop_mysqlserver_and_wait() {
-  start_mysql_if_stopped_and_wait || return 1
+sql_stop_server_and_wait() {
+  sql_start_if_stopped_and_wait || return 1
 
   log_info "=== Stopping mysql-server..."
   systemctl stop mysql || return 1
-  while is_mysqlserver_running; do
+  while sql_is_server_running; do
     sleep 1
   done
 }
 
 #######################################
-# Makes sure that mysql is running using `start_mysql_if_stopped_and_wait` and then injects the given Query using `mysql -N`
+# Makes sure that mysql is running using `sql_start_if_stopped_and_wait` and then injects the given Query using `mysql -N`
 #
 # Params:
 #   @ - SQL-Query to inject
 # Return's:
-#   1 if `start_mysql_if_stopped_and_wait` exited with an error (returned 1), otherwise the PIPESTATUS from the executed mysql-command
+#   1 if `sql_start_if_stopped_and_wait` exited with an error (returned 1), otherwise the PIPESTATUS from the executed mysql-command
 #######################################
-query_mysql() {
-  start_mysql_if_stopped_and_wait || return 1
+sql_make_query_and_return_exitcode() {
+  sql_start_if_stopped_and_wait || return 1
 
   echo "$@" | mysql -N
   return "${PIPESTATUS[1]}"
 }
 
 #######################################
-# Makes sure that mysql is running using `start_mysql_if_stopped_and_wait` and then injects the given Query using `mysql -N`
+# Makes sure that mysql is running using `sql_start_if_stopped_and_wait` and then injects the given Query using `mysql -N`
 #
 # Params:
 #   @ - SQL-Query to inject
 # Return's:
-#   1 if `start_mysql_if_stopped_and_wait` exited with an error (returned 1)
+#   1 if `sql_start_if_stopped_and_wait` exited with an error (returned 1)
 # Echo's:
 #   The output of the executed mysql-command
 #######################################
-query_mysql_echo() {
-  start_mysql_if_stopped_and_wait || return 1
+sql_make_query_and_echo() {
+  sql_start_if_stopped_and_wait || return 1
 
   local -r result="$(echo "$@" | mysql -N)"
   echo "${result}"
@@ -116,8 +119,8 @@ query_mysql_echo() {
 # Return's:
 #   1 if the mysql-query failed
 #######################################
-query_flush_privileges() {
-  query_mysql "FLUSH PRIVILEGES;" |& log_debug_output
+sql_query_flush_privileges() {
+  sql_make_query_and_return_exitcode "FLUSH PRIVILEGES;" |& log_debug_output
   (("${PIPESTATUS[0]}" == 0)) || return 1
 }
 
@@ -127,7 +130,7 @@ query_flush_privileges() {
 # Return's:
 #   1 if the mysql-query found 0 users matching the given name
 #######################################
-does_mysql_user_exist() {
+sql_does_user_exist() {
   local -r mysql_user="$1"
   RESULT="$(mysql -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${mysql_user//\'/\\\'}')")"
   if [[ "$RESULT" = 1 ]]; then
@@ -143,10 +146,10 @@ does_mysql_user_exist() {
 # Echo's:
 #   Either "authentication_string" or "password", depending on the 'plugin'-field of the found SQL-User-Entry
 #######################################
-get_mysql_password_fieldname() {
+sql_get_password_field_name_of_user() {
   local -r user="$1"
   # See https://dba.stackexchange.com/a/224238
-  if ! [[ "$(query_mysql "SELECT plugin FROM mysql.user WHERE user = '${user//\'/\\\'}';")" =~ ^mysql_native_password$|^unix_socket$ ]]; then
+  if ! [[ "$(sql_make_query_and_return_exitcode "SELECT plugin FROM mysql.user WHERE user = '${user//\'/\\\'}';")" =~ ^mysql_native_password$|^unix_socket$ ]]; then
     password_field='authentication_string'
   else
     password_field='password'
@@ -167,18 +170,18 @@ get_mysql_password_fieldname() {
 # Return's:
 #   1 if any of the executed SQL-Queries failed.
 #######################################
-set_mysql_password() {
+sql_update_user_password() {
   log_info "== Set mysql-password of user ${1}..."
   local -r user="$1"
   local -r password="$2"
-  local -r password_field="$(get_mysql_password_fieldname "${user}")"
+  local -r password_field="$(sql_get_password_field_name_of_user "${user}")"
 
 # 'password_last_changed' was removed in MySQL 5.7 and greater: https://stackoverflow.com/a/35073129
-#  query_mysql "UPDATE mysql.user SET password_last_changed = NOW() WHERE user = '${user//\'/\\\'}';" &> /dev/null
-  query_mysql "UPDATE mysql.user SET $password_field = PASSWORD('${password//\'/\\\'}') WHERE user = '${user//\'/\\\'}';" |& log_debug_output
+#  sql_make_query_and_return_exitcode "UPDATE mysql.user SET password_last_changed = NOW() WHERE user = '${user//\'/\\\'}';" &> /dev/null
+  sql_make_query_and_return_exitcode "UPDATE mysql.user SET $password_field = PASSWORD('${password//\'/\\\'}') WHERE user = '${user//\'/\\\'}';" |& log_debug_output
   (("${PIPESTATUS[0]}" == 0)) || return 1
 
-  query_flush_privileges || return 1
+  sql_query_flush_privileges || return 1
 
   echo QUIT | mysql -u "$user" -p"$password" |& log_debug_output
   return "${PIPESTATUS[1]}"
@@ -191,16 +194,16 @@ set_mysql_password() {
 # Params:
 #   1 - SQL username
 # Return's:
-#   1 if `does_mysql_user_exist` failed (= User doesn't exist). 0 if the query wasn't empty.
+#   1 if `sql_does_user_exist` failed (= User doesn't exist). 0 if the query wasn't empty.
 #######################################
-has_mysql_password() {
+sql_does_user_have_password() {
   log_info "== Check if mysql-user '${1}' has password..."
   local -r user="$1"
-  local -r password_field="$(get_mysql_password_fieldname "${user}")"
+  local -r password_field="$(sql_get_password_field_name_of_user "${user}")"
 
-  does_mysql_user_exist "$user" || log_error "SQL-User '$user' doesn't exist!" || return 1
+  sql_does_user_exist "$user" || log_error "SQL-User '$user' doesn't exist!" || return 1
 
-  local -r found_password="$(query_mysql_echo "SELECT ${password_field} FROM mysql.user WHERE user = '${user//\'/\\\'}';")" |& log_debug_output
+  local -r found_password="$(sql_make_query_and_echo "SELECT ${password_field} FROM mysql.user WHERE user = '${user//\'/\\\'}';")" |& log_debug_output
 
   if [[ -z "${found_password}" ]]; then
     return 1 # empty
@@ -217,12 +220,12 @@ has_mysql_password() {
 #
 #  log_debug "=== Generate password..."
 #  local -r new_debian_sys_maint_mysql_password="$(generate_password)"
-#  set_mysql_password debian-sys-maint "$new_debian_sys_maint_mysql_password" || return 1
+#  sql_update_user_password debian-sys-maint "$new_debian_sys_maint_mysql_password" || return 1
 #
 #  log_debug "=== Edit etc/mysql/debian.cnf..."
 #  sed -i "s/^ *password  *=.*$/password = $new_debian_sys_maint_mysql_password/g" "etc/mysql/debian.cnf" || return 1
 #
-#  start_mysql_if_stopped_and_wait || return 1;
+#  sql_start_if_stopped_and_wait || return 1;
 #
 #  log_debug "=== Applying..."
 #  echo QUIT | mysql --defaults-file=/etc/mysql/debian.cnf -u debian-sys-maint |& log_debug_output
@@ -245,23 +248,23 @@ has_mysql_password() {
 #  log_info "= Set password of mysql-user 'root'..."
 #  local -r new_root_password="$1"
 #
-#  if ! has_mysql_password "root"; then
+#  if ! sql_does_user_have_password "root"; then
 #    # no password = anyone with superuser privileges (aka. root itself or any sudo user) can just use the mysql command
 #    log_info "== SQL-User 'root' has no password at all. No need to do any workaround - just changing the password..."
-#    set_mysql_password "root" "$new_root_password" || return 1
+#    sql_update_user_password "root" "$new_root_password" || return 1
 #  else
 #    log_info "== #1 Make sure MySQL-Server Process is stopped"
-#    start_mysql_if_stopped_and_wait || return 1
-#    stop_mysqlserver_and_wait || return 1
+#    sql_start_if_stopped_and_wait || return 1
+#    sql_stop_server_and_wait || return 1
 #
 #    log_info "== #2 Restart Server without permission checks"
 #    systemctl set-environment MYSQLD_OPTS="--skip-grant-tables --skip-networking"
-#    start_mysql_if_stopped_and_wait || return 1
+#    sql_start_if_stopped_and_wait || return 1
 #
 #    log_info "== #3 Actually changing the root Password"
-#    query_flush_privileges || return 1
-#  #  query_mysql "UPDATE mysql.user SET plugin = '' WHERE user = 'root';"
-#    set_mysql_password "root" "$new_root_password" || return 1
+#    sql_query_flush_privileges || return 1
+#  #  sql_make_query_and_return_exitcode "UPDATE mysql.user SET plugin = '' WHERE user = 'root';"
+#    sql_update_user_password "root" "$new_root_password" || return 1
 #
 #    log_info "== #4 Reverting to normal settings"
 #    systemctl unset-environment MYSQLD_OPTS || return 1
@@ -269,7 +272,7 @@ has_mysql_password() {
 #  fi
 #
 #  log_info "== Making a useless query to see if it fails. "
-#  query_mysql "QUIT" || return 1
+#  sql_make_query_and_return_exitcode "QUIT" || return 1
 #}
 
 #######################################
@@ -279,14 +282,14 @@ has_mysql_password() {
 # Return's:
 #   1 if the mysql-query failed
 #######################################
-create_mysql_user() {
+sql_check_and_create_user() {
   local -r user="$1"
 
-  does_mysql_user_exist "$user" && log_error "== MySQL-User '${user}' already exists. Skipping creation-command..." && return 0
+  sql_does_user_exist "$user" && log_error "== MySQL-User '${user}' already exists. Skipping creation-command..." && return 0
 
   local -r password="$2"
   log_info "== Creating SQL-User '$user'..."
-  query_mysql "CREATE USER '${user//\'/\\\'}'@'localhost' IDENTIFIED BY '${password//\'/\\\'}';" |& log_debug_output
+  sql_make_query_and_return_exitcode "CREATE USER '${user//\'/\\\'}'@'localhost' IDENTIFIED BY '${password//\'/\\\'}';" |& log_debug_output
   (("${PIPESTATUS[0]}" == 0)) || return 1
 }
 
@@ -297,17 +300,17 @@ create_mysql_user() {
 # Return's:
 #   1 if any of the mysql-queries failed
 #######################################
-create_mysql_user_with_all_privileges() {
+sql_create_user_and_grant_all_privileges() {
   log_info "= Create SQL-User '$1' + Grant ALL!! PRIVILEGES"
   local -r user="$1"
   local -r password="$2"
 
-  create_mysql_user "$user" "$password" || return 1
+  sql_check_and_create_user "$user" "$password" || return 1
 
-  query_mysql "GRANT ALL PRIVILEGES ON *.* TO '${user//\'/\\\'}'@'localhost' WITH GRANT OPTION;" |& log_debug_output
+  sql_make_query_and_return_exitcode "GRANT ALL PRIVILEGES ON *.* TO '${user//\'/\\\'}'@'localhost' WITH GRANT OPTION;" |& log_debug_output
   (("${PIPESTATUS[0]}" == 0)) || return 1
 
-  query_flush_privileges || return 1
+  sql_query_flush_privileges || return 1
 
   echo QUIT | mysql -u "$user" -p"$password" |& log_debug_output
   return "${PIPESTATUS[1]}"
@@ -319,13 +322,13 @@ create_mysql_user_with_all_privileges() {
 # Return's:
 #   nothing - even if the mysql-query failed
 #######################################
-create_database_if_not_exists(){
+sql_create_database_if_not_exists(){
   local -r database="$1"
   local escaped_database="${database//\'/\\\'}" # Escape "'"
 #       escaped_database="${escaped_database//_/\\_}" # Escape "_" TODO is this needed?
 
   log_info "== Creating database with the name '${escaped_database}' if it doesn't already exist..."
-  query_mysql "CREATE DATABASE IF NOT EXISTS \`${escaped_database}\`;" |& log_debug_output
+  sql_make_query_and_return_exitcode "CREATE DATABASE IF NOT EXISTS \`${escaped_database}\`;" |& log_debug_output
 }
 
 #######################################
@@ -335,15 +338,14 @@ create_database_if_not_exists(){
 # Return's:
 #   1 if the mysql-query failed
 #######################################
-grant_all_usage_without_restrictions() {
+sql_grant_all_usage_without_restrictions() {
   local -r user="$1"
   local escaped_user="${user//\'/\\\'}" # Escape "'"
 
   log_info "== Granting *.* usage to user '${escaped_user}' without ANY Resource constraints..."
-  query_mysql "GRANT USAGE ON *.* TO '${escaped_user}'@'localhost' REQUIRE NONE WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;" |& log_debug_output
+  sql_make_query_and_return_exitcode "GRANT USAGE ON *.* TO '${escaped_user}'@'localhost' REQUIRE NONE WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;" |& log_debug_output
   (("${PIPESTATUS[0]}" == 0)) || return 1
 }
-
 
 #######################################
 # Params:
@@ -353,7 +355,7 @@ grant_all_usage_without_restrictions() {
 # Return's:
 #   1 if any of the mysql-queries failed
 #######################################
-create_mysql_user_and_database_and_grant_privileges(){
+sql_create_user_and_database_and_grant_privileges(){
   log_info "= Create SQL-User '$1' + Create Database '$3' (if not already exists) and grant the mentioned user all privileges on it."
   local -r user="$1"
   local escaped_user="${user//\'/\\\'}" # Escape "'"
@@ -362,14 +364,14 @@ create_mysql_user_and_database_and_grant_privileges(){
   local escaped_database="${database//\'/\\\'}" # Escape "'"
 #       escaped_database="${escaped_database//_/\\_}" # Escape "_" TODO is this needed?
 
-  create_mysql_user "$user" "$password" || return 1
+  sql_check_and_create_user "$user" "$password" || return 1
 
-  grant_all_usage_without_restrictions "$user" || return 1
+  sql_grant_all_usage_without_restrictions "$user" || return 1
 
-  create_database_if_not_exists "$database"
+  sql_create_database_if_not_exists "$database"
 
   log_info "== Granting user '${escaped_user}' ALL privileges on Database '${escaped_database}'..."
-  query_mysql "GRANT ALL PRIVILEGES ON \`${escaped_database}\`.* TO '${escaped_user}'@'localhost';" |& log_debug_output
+  sql_make_query_and_return_exitcode "GRANT ALL PRIVILEGES ON \`${escaped_database}\`.* TO '${escaped_user}'@'localhost';" |& log_debug_output
   (("${PIPESTATUS[0]}" == 0)) || return 1
 }
 
@@ -380,7 +382,7 @@ create_mysql_user_and_database_and_grant_privileges(){
 # CREATE DATABASE IF NOT EXISTS `${escaped_user}`; \
 # GRANT ALL PRIVILEGES ON `${escaped_user}\_daemon`.* TO '${escaped_user}'@'localhost';
 #
-# See also create_mysql_user_and_database_and_grant_privileges
+# See also sql_create_user_and_database_and_grant_privileges
 #
 # Params:
 #   1 - SQL username (which will also be chosen to be the name of the database)
@@ -388,10 +390,9 @@ create_mysql_user_and_database_and_grant_privileges(){
 # Return's:
 #   1 if any of the mysql-queries failed
 #######################################
-create_mysql_user_and_same_name_database_and_grant_privileges(){
-  create_mysql_user_and_database_and_grant_privileges "$1" "$2" "$1"
+sql_create_user_and_same_name_database_and_grant_privileges(){
+  sql_create_user_and_database_and_grant_privileges "$1" "$2" "$1"
 }
-
 
 #######################################
 # Inspired by the option "Grant all rights to databases starting with the user name (username\_%)." when creating a new user phpMyAdmin, which produces these queries:
@@ -405,7 +406,7 @@ create_mysql_user_and_same_name_database_and_grant_privileges(){
 # Return's:
 #   1 if any of the mysql-queries failed
 #######################################
-create_mysql_user_and_grant_him_privileges_on_databases_starting_with_his_name(){
+sql_create_user_and_grant_him_privileges_on_databases_starting_with_his_name(){
   log_info "= Create SQL-User '$1' + Grant ALL privileges on Databases starting with his name."
   local -r user="$1"
   local escaped_user="${user//\'/\\\'}" # Escape "'"
@@ -413,11 +414,11 @@ create_mysql_user_and_grant_him_privileges_on_databases_starting_with_his_name()
   local -r database="$user"
   local escaped_database="${database//\'/\\\'}" # Escape "'"
 
-  create_mysql_user "$user" "$password" || return 1
+  sql_check_and_create_user "$user" "$password" || return 1
 
-  grant_all_usage_without_restrictions "$user" || return 1
+  sql_grant_all_usage_without_restrictions "$user" || return 1
 
   log_info "== Granting user '${escaped_user}' ALL privileges on Databases starting with his name..."
-  query_mysql "GRANT ALL PRIVILEGES ON \`${escaped_database}\_%\`.* TO '${escaped_user}'@'localhost';" |& log_debug_output
+  sql_make_query_and_return_exitcode "GRANT ALL PRIVILEGES ON \`${escaped_database}\_%\`.* TO '${escaped_user}'@'localhost';" |& log_debug_output
   (("${PIPESTATUS[0]}" == 0)) || return 1
 }

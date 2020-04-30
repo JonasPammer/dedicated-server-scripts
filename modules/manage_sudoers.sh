@@ -27,7 +27,7 @@ ask_and_remove_chosen_user_from_sudo(){
     return
   fi
 
-  unmake_user_sudoer "${CHOSEN_USERNAME}"
+  sudo_unsudo_make_user_sudoer "${CHOSEN_USERNAME}"
 }
 
 ask_and_add_chosen_user_to_sudo(){
@@ -45,7 +45,7 @@ ask_and_add_chosen_user_to_sudo(){
     return
   fi
 
-  make_user_sudoer "${CHOSEN_USERNAME}"
+  sudo_make_user_sudoer "${CHOSEN_USERNAME}"
 }
 
 call_module(){
@@ -54,10 +54,10 @@ call_module(){
   CREATE_USER . \
   --- --- "
 
-  local sorted_system_users=$(echo "$(fetch_system_users)" | sort)
+  local sorted_system_users=$(echo "$(sudo_echo_all_system_users)" | sort)
   set +e # Do NOT quit if the following EXIT-CODE is other than 0
   for username in ${sorted_system_users}; do
-    if can_user_execute_sudo "${username}"; then
+    if sudo_is_user_sudoer "${username}"; then
       menu_builder="${menu_builder}${username} (can_execute_sudo) "
     else
       menu_builder="${menu_builder}${username} . "
@@ -111,7 +111,7 @@ call_module(){
   fi
 
   set +e # Do NOT quit if the following EXIT-CODE is other than 0
-  if can_user_execute_sudo "${CHOSEN_USERNAME}"; then
+  if sudo_is_user_sudoer "${CHOSEN_USERNAME}"; then
     ask_and_remove_chosen_user_from_sudo
   else
     ask_and_add_chosen_user_to_sudo

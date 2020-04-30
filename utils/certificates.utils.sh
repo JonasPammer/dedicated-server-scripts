@@ -11,7 +11,7 @@ source_utils "mysql"
 # Returns:
 #   1 if anything went wrong
 #######################################
-regenerate_webmin_miniserv_ssl_certificate() {
+cert_regenerate_webmin_miniserv_ssl_cert() {
   log_info "== Removing existing webmin-miniserv-certificate..."
   local -r webmin_miniserv_ssl_certificate="/etc/webmin/miniserv.pem"
   if [[ -e "$webmin_miniserv_ssl_certificate" ]]; then
@@ -29,12 +29,12 @@ regenerate_webmin_miniserv_ssl_certificate() {
 #######################################
 # Steps from https://www.thomas-krenn.com/de/wiki/Ubuntu_default_snakeoil_SSL-Zertifikat_erneuern#Default_SSL-Zertifikat_erneuern
 # You need to restart the apache2-service for the cert to take affect!
-# Also see `enable_default_ssl_configuration`
+# Also see `cert_enable_default_ssl_config`
 #
 # Returns:
 #   1 if anything went wrong
 #######################################
-regenerate_snakeoil_ssl_certificate() {
+cert_regenerate_snakeoil_ssl_cert() {
   log_info "== Removing existing snakeoil-ssl-certificate..."
   local -r path_to_certificate="/etc/ssl/certs/ssl-cert-snakeoil.pem"
   local -r path_to_key="/etc/ssl/private/ssl-cert-snakeoil.key"
@@ -51,7 +51,7 @@ regenerate_snakeoil_ssl_certificate() {
   [[ -e "$path_to_certificate" ]] && [[ -e "$path_to_key" ]]
 }
 
-enable_default_ssl_configuration() {
+cert_enable_default_ssl_config() {
   a2enmod ssl
   a2ensite default-ssl.conf
   systemctl reload apache2

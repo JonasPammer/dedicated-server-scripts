@@ -7,7 +7,7 @@ set -eo pipefail
 source utils.sh
 
 # initialize global utils
-init_log
+log_do_init
 mkdir -p "${TEMP_DIR}"
 #mktemp -d "${TEMP_DIR}"
 trap end_sigint SIGINT
@@ -27,6 +27,7 @@ apt_get_without_interaction "install" "sudo \
     zip unzip \
     wget \
     software-properties-common \
+    apt-transport-https \
     neofetch screenfetch \
     htop \
     dialog \

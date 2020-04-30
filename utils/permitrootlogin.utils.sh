@@ -14,7 +14,7 @@ export SSHD_CONFIG_FILE="/etc/ssh/sshd_config"
 # Returns & Echo's:
 #   0 if "PermitRootLogin" value is "yes"
 #######################################
-is_permitrootlogin_enabled(){
+ssh_is_permitrootlogin_enabled(){
   cat "${SSHD_CONFIG_FILE}" | grep "^PermitRootLogin yes" >/dev/null
   local -r exit_code=$?
   echo "${exit_code}"
@@ -29,9 +29,9 @@ is_permitrootlogin_enabled(){
 # Params:
 #   1 - Either "yes" or "no"
 #######################################
-set_permitrootlogin_enabled(){
+ssh_set_permitrootlogin_enabled(){
   if [[ $# -eq 0 ]]; then
-    log_error "== set_permitrootlogin_enabled needs at least one argument! (either \"yes\" or \"no\")"
+    log_error "== ssh_set_permitrootlogin_enabled needs at least one argument! (either \"yes\" or \"no\")"
     return 1
   fi
 
@@ -46,14 +46,14 @@ set_permitrootlogin_enabled(){
     sed -i 's/^PermitRootLogin yes/PermitRootLogin no/' "${SSHD_CONFIG_FILE}"
   fi
 
-  log_info "== PermitRootLogin: $(is_permitrootlogin_enabled)"
+  log_info "== PermitRootLogin: $(ssh_is_permitrootlogin_enabled)"
   set -e
 }
 
 #######################################
 # Used to take affect of the changes made to the config.
 #######################################
-restart_ssh_service(){
+ssh_restart_service(){
   set -e
   service ssh restart
 }

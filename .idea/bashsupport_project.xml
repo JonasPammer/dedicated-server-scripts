@@ -26,6 +26,13 @@
         <option value="MC_WEB_DIR" />
         <option value="MC_WEB_DIR_OVERWRITE" />
         <option value="MC_WEB_USER" />
+        <option value="MEDIAWIKI_BACKUPS_FOLDER" />
+        <option value="MWBR_DB_CHARSET" />
+        <option value="MWBR_DB_HOST" />
+        <option value="MWBR_DB_NAME" />
+        <option value="MWBR_DB_PASS" />
+        <option value="MWBR_DB_USER" />
+        <option value="MW_DEFAULT_INSTALL_DIR" />
         <option value="OVERWRITE_CONF" />
         <option value="SCRIPT_DIR" />
         <option value="SCRIPT_NAME" />

@@ -17,7 +17,7 @@ if [[ ! -z "$FORCED_NEXT_MENU" ]]; then
 else
   set -e
   # clear last selection
-  read -p "Press Enter to continue..."
+  read -p "Press Enter to continue to main-menu..."
   CHOSEN_MENU=""
   # Loop until any selection has been made
   while [[ -z "$CHOSEN_MENU" ]]; do
@@ -27,7 +27,7 @@ else
                   "Check which user has sudo-priv. Add/Remove priviliges to/from user.")
 
     set +e # Do NOT quit if the following EXIT-CODE is other than 0
-    if is_permitrootlogin_enabled; then
+    if ssh_is_permitrootlogin_enabled; then
       menu_builder+=("Disable PermitRootLogin (Automatic)" \
                      ".")
     else
@@ -37,23 +37,24 @@ else
     set -e
 
     if hash ufw 2>/dev/null; then
-      menu_builder+=("(Re-Run) Basic Secure (Automatic)" \
-                     "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
+      menu_builder+=("(Re-Run) Basic Secure (Automatic)")
     else
-      menu_builder+=("Basic Secure (Automatic)" \
-                     "Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
+      menu_builder+=("Basic Secure (Automatic)")
     fi
+    menu_builder+=("Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.")
 
     if [[ -d "/usr/share/phpmyadmin/" ]]; then
-      menu_builder+=("(Re-Run) Install & Configure LAMPP (Semi-Automatic)" \
-                     "(Install Apache2, MariaDB, PHP and PHPMyAdmin) + Configure/Setup PHPMyAdmin")
+      menu_builder+=("(Re-Run) Install & Configure LAMPP (Semi-Automatic)")
     else
-      menu_builder+=("Install & Configure LAMPP (Semi-Automatic)" \
-                     "(Install Apache2, MariaDB, PHP and PHPMyAdmin) + Configure/Setup PHPMyAdmin")
+      menu_builder+=("Install & Configure LAMPP (Semi-Automatic)")
     fi
+    menu_builder+=("Install Apache2, MariaDB, PHP and PHPMyAdmin + Configure/Setup PHPMyAdmin")
 
-    menu_builder+=("Install Multicraft" \
-                   ".")
+    menu_builder+=("MediaWiki-Menu" \
+                   "")
+
+    menu_builder+=("Install Multicraft (Manual or Load from Config)" \
+                   "")
 
     menu_builder+=("exit" \
                    ".")
@@ -113,6 +114,11 @@ case $CHOSEN_MENU in
 
   "Install & Configure LAMPP"*|"install_configure_lampp")
     . "${SCRIPT_DIR}/modules/install_lampp.sh"
+    call_module
+    ;;
+
+  *"MediaWiki"*)
+    . "${SCRIPT_DIR}/modules/mediawiki_menu.sh"
     call_module
     ;;
 

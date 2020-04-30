@@ -20,7 +20,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
   for res in ${INSTALL_RESOURCES}; do
       if [[ ! -e "${INSTALL_RESOURCES_DIR}${res}" ]]; then
           log_error "Can't find '${INSTALL_RESOURCES_DIR}${res}'! Aborting..."
-          quit
+          mc_end_gracefully
       fi
   done
 }
@@ -29,7 +29,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
 02_ask_load_existing_installation_script_config(){
   log_info "= 02 Check for existing config file at '${CFG_FILE}'... "
   if [[ -e "${CFG_FILE}" ]] ; then
-    ask "LOAD_CFG" "y" \
+    mc_ask "LOAD_CFG" "y" \
       "Found '${CFG_FILE}'. Source/Load settings from this file? [\$def]/n" \
       "-"
 
@@ -46,7 +46,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
 # Collect basic information
 03_ask_basic_information(){
   log_info "= 03 Collect basic user information "
-  ask "MC_MULTIUSER" "y" \
+  mc_ask "MC_MULTIUSER" "y" \
    "Run each Minecraft server under its own user? (Multicraft will create system users): [\$def]/n" \
    "Create system user for each Minecraft server: \$var"
 
@@ -55,37 +55,37 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
   else
       def="${USER}"
   fi
-  ask "MC_USER" "$def" \
+  mc_ask "MC_USER" "$def" \
     "Run Multicraft under this user: [\$def]" \
     "Multicraft will run as \$var"
   if [[ "`cat /etc/passwd | awk -F: '{ print $1 }' | grep ${MC_USER}`" = "" ]]; then
-      ask "MC_CREATE_USER" "y" \
+      mc_ask "MC_CREATE_USER" "y" \
         "User not found. Create user '${MC_USER}' on start of installation? [\$def]/n" \
         "Create user '$MC_USER': \$var"
       if [[ "${MC_CREATE_USER}" != "y" ]]; then
           log_error "Can't find '${INSTALL_RESOURCES_DIR}${res}'! Aborting..."
-          quit
+          mc_end_gracefully
       fi
       MC_USER_EXISTS="n"
   else
       MC_USER_ESISTS="y"
   fi
 
-  ask "MC_DIR" "/home/$MC_USER/multicraft" \
+  mc_ask "MC_DIR" "/home/$MC_USER/multicraft" \
     "Install Multicraft in: [\$def]" \
     "Installation directory: \$var"
   if [[ -e "${MC_DIR}" ]]; then
-      ask "MC_DIR_OVERWRITE" "y" "Warning: '${MC_DIR}' exists! Continue installing in this directory? [\$def]/n" "Installing in existing directory: \$var"
+      mc_ask "MC_DIR_OVERWRITE" "y" "Warning: '${MC_DIR}' exists! Continue installing in this directory? [\$def]/n" "Installing in existing directory: \$var"
       if [[ "${MC_DIR_OVERWRITE}" != "y" ]]; then
           log_error "Won't install in existing directory. Aborting..."
-          quit
+          mc_end_gracefully
       fi
   fi
 
-  ask "MC_KEY" "no" \
+  mc_ask "MC_KEY" "no" \
     "If you have a license key you can enter it now: [\$def]" \
     "License key: \$var"
-  ask "MC_DAEMON_ID" "1" \
+  mc_ask "MC_DAEMON_ID" "1" \
     "If you control multiple machines from one web panel you need to assign each daemon a unique number (requires a Dynamic or custom license). Daemon number? [\$def]" \
     "Daemon number: \$var"
   echo
@@ -95,7 +95,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
 04_ask_local_installation(){
   log_info "= 04 Local installation? "
 
-  ask "MC_LOCAL" "y" \
+  mc_ask "MC_LOCAL" "y" \
    "Will the web panel run on this machine? [\$def]/n" \
    "Local front end: \$var"
 
@@ -114,11 +114,11 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
   if [[ "${MC_LOCAL}" != "y" ]]; then
       export MC_DB_TYPE="mysql"
 
-      ask "MC_DAEMON_IP" "${IP}" \
+      mc_mc_ask "MC_DAEMON_IP" "${IP}" \
         "IP the daemon will bind to: [\$def]" \
         "Daemon listening on IP: \$var"
       IP="${MC_DAEMON_IP}"
-      ask "MC_DAEMON_PORT" "25465" \
+      mc_mc_ask "MC_DAEMON_PORT" "25465" \
         "Port the daemon to listen on: [\$def]" \
         "Daemon port: \$var"
   else
@@ -131,23 +131,23 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
           default_web_directory="/var/www/html"
       fi
 
-      ask "MC_WEB_USER" "$default_web_user" \
+      mc_mc_ask "MC_WEB_USER" "$default_web_user" \
         "User of the webserver: [\$def]" \
         "Webserver user: \$var"
-      ask "MC_WEB_DIR" "$default_web_directory/multicraft" \
+      mc_mc_ask "MC_WEB_DIR" "$default_web_directory/multicraft" \
         "Location of the web panel files: [\$def]" \
         "Web panel directory: \$var"
       if [[ -e "${MC_WEB_DIR}" ]]; then
-          ask "MC_WEB_DIR_OVERWRITE" "y" \
+          mc_mc_ask "MC_WEB_DIR_OVERWRITE" "y" \
             "Warning: '${MC_WEB_DIR}' exists! Continue installing the web panel in this directory? [\$def]/n" \
             "Installing in existing web panel directory: \$var"
           if [[ "${MC_WEB_DIR_OVERWRITE}" != "y" ]]; then
               log_error "Won't install in existing web-panel directory. Aborting..."
-              quit
+              mc_end_gracefully
           fi
       fi
   fi
-  ask "MC_DAEMON_PW" "none" \
+  mc_mc_ask "MC_DAEMON_PW" "none" \
     "Please enter a new daemon password (use the same password in the last step of the panel installer)  [\$def]" \
     "Daemon connection password: \$var"
 
@@ -157,7 +157,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
 
 05_ask_ftp_server(){
   log_info "= 05 FTP-Server "
-  ask "MC_FTP_SERVER" "y" \
+  mc_mc_ask "MC_FTP_SERVER" "y" \
     "Enable builtin FTP server? [\$def]/n" \
     "Enable builtin FTP server: \$var"
 
@@ -167,13 +167,13 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
           IP="0.0.0.0"
       fi
 
-      ask "MC_FTP_IP" "${IP}" \
+      mc_mc_ask "MC_FTP_IP" "${IP}" \
         "IP the FTP server will listen on (0.0.0.0 for all IPs): [\$def]" \
         "FTP server IP: \$var"
       if [[ "${MC_FTP_IP}" = "0.0.0.0" ]]; then
           # Try determining our external IP address
           EXT_IP="`curl -L http://www.multicraft.org/ip 2> /dev/null`"
-          ask "MC_FTP_EXTERNAL_IP" "${EXT_IP}" \
+          mc_mc_ask "MC_FTP_EXTERNAL_IP" "${EXT_IP}" \
            "IP to use to connect to the FTP server (external IP): [\$def]" \
            "FTP server external IP: \$var"
 
@@ -184,11 +184,11 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
               MC_FTP_IP=""
           fi
       fi
-      ask "MC_FTP_PORT" "21" \
+      mc_mc_ask "MC_FTP_PORT" "21" \
         "FTP server port: [\$def]" \
         "FTP server port: \$var"
 
-      ask "MC_PLUGINS" "n" \
+      mc_mc_ask "MC_PLUGINS" "n" \
         "Block FTP upload of .jar files and other executables (potentially dangerous plugins)? [\$def]/y" \
         "Block .jar and executable upload: \$var"
       echo
@@ -206,21 +206,21 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
 #  echo "SQLite is more light weight and it will work fine for small installations up to 10 servers."
 #  echo "For multiple daemons on a single panel MySQL is required."
 #  echo
-#  ask "MC_DB_TYPE" "sqlite" "What kind of database do you want to use? [\$def]/mysql" "Database type: \$var"
+#  mc_mc_ask "MC_DB_TYPE" "sqlite" "What kind of database do you want to use? [\$def]/mysql" "Database type: \$var"
 
   if [[ "${MC_DB_TYPE}" = "mysql" ]]; then
     echo
     echo "NOTE: This is for the daemon config, the front end has an installation routine for database configuration and initialization."
-    ask "MC_DB_HOST" "127.0.0.1" \
+    mc_mc_ask "MC_DB_HOST" "127.0.0.1" \
       "Database host: [\$def]" \
       "Database host: \$var"
-    ask "MC_DB_NAME" "multicraft_daemon" \
+    mc_mc_ask "MC_DB_NAME" "multicraft_daemon" \
       "Database name: [\$def]" \
       "Database name: \$var"
-    ask "MC_DB_USER" "multicraft" \
+    mc_mc_ask "MC_DB_USER" "multicraft" \
       "Database user: [\$def]" \
       "Database user: \$var"
-    ask "MC_DB_PASS" "" \
+    mc_mc_ask "MC_DB_PASS" "" \
      "Database password: [\$def]" \
      "Database password: \$var"
     echo
@@ -231,7 +231,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
 #  else
 #      echo "Unsupported database type '$MC_DB_TYPE'!"
 #      echo "Aborting."
-#      quit
+#      mc_end_gracefully
 #  fi
   log_info "*** Please use the web panel to initialize the database."
   echo
@@ -243,17 +243,17 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
   MC_ZIP="`which zip`"
   MC_UNZIP="`which unzip`"
   if [[ "$MC_JAVA" = "" ]]; then
-      ask "MC_JAVA" "/usr/bin/java" \
+      mc_mc_ask "MC_JAVA" "/usr/bin/java" \
         "Path to java program: [\$def]" \
         "Path to java: \$var"
   fi
   if [[ "$MC_ZIP" = "" ]]; then
-      ask "MC_ZIP" "/usr/bin/zip" \
+      mc_ask "MC_ZIP" "/usr/bin/zip" \
         "Path to zip program: [\$def]" \
         "Path to zip: \$var"
   fi
   if [[ "$MC_UNZIP" = "" ]]; then
-      ask "MC_UNZIP" "/usr/bin/unzip" \
+      mc_ask "MC_UNZIP" "/usr/bin/unzip" \
         "Path to unzip program: [\$def]" \
         "Path to unzip: \$var"
   fi
@@ -263,22 +263,22 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
       MC_USERDEL="`which userdel`"
       MC_GROUPDEL="`which groupdel`"
       if [[ "$MC_USERADD" = "" ]]; then
-          ask "MC_USERADD" "/usr/sbin/useradd" \
+          mc_ask "MC_USERADD" "/usr/sbin/useradd" \
             "Path to useradd program: [\$def]" \
             "Path to useradd program: \$var"
       fi
       if [[ "$MC_GROUPADD" = "" ]]; then
-          ask "MC_GROUPADD" "/usr/sbin/groupadd" \
+          mc_ask "MC_GROUPADD" "/usr/sbin/groupadd" \
             "Path to groupadd program: [\$def]" \
             "Path to groupadd program: \$var"
       fi
       if [[ "$MC_USERDEL" = "" ]]; then
-          ask "MC_USERDEL" "/usr/sbin/userdel" \
+          mc_ask "MC_USERDEL" "/usr/sbin/userdel" \
             "Path to userdel program: [\$def]" \
             "Path to userdel program: \$var"
       fi
       if [[ "$MC_GROUPDEL" = "" ]]; then
-          ask "MC_GROUPDEL" "/usr/sbin/groupdel" \
+          mc_ask "MC_GROUPDEL" "/usr/sbin/groupdel" \
             "Path to groupdel program: [\$def]" \
             "Path to groupdel program: \$var"
       fi
@@ -286,16 +286,16 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
 }
 
 08_ask_should_start_installation(){
-  log_info "= 08 Asking if actual Installation should start - otherwise quit."
+  log_info "= 08 Asking if actual Installation should start - otherwise end gracefully."
 
   log_info
   log_info "NOTE: Any running daemon will be stopped!"
-  ask "START_INSTALL" "y" \
+  mc_ask "START_INSTALL" "y" \
     "Ready to install Multicraft. Start installation? [\$def]/n" \
     "-"
   if [[ "${START_INSTALL}" != "y" ]]; then
       echo "Not installing."
-      quit
+      mc_end_gracefully
   fi
 }
 
@@ -358,7 +358,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
     log_error "== The database name of the daemon (${MC_DB_NAME}) needs to start with \"${MC_DB_USER}_\" in order for this step to proceed. "
   fi
 
-  if does_mysql_user_exist "${MC_DB_USER}"; then
+  if sql_does_user_exist "${MC_DB_USER}"; then
     log_error "=== SQL-User '${MC_DB_USER}' already exists. Skipping step 97..."
     return
   else
@@ -375,8 +375,8 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
       return
     fi
 
-    create_mysql_user_and_grant_him_privileges_on_databases_starting_with_his_name "${MC_DB_USER}" "${MC_DB_PASS}"
-    create_database_if_not_exists "${MC_DB_NAME}"
+    sql_create_user_and_grant_him_privileges_on_databases_starting_with_his_name "${MC_DB_USER}" "${MC_DB_PASS}"
+    sql_create_database_if_not_exists "${MC_DB_NAME}"
   fi
 
   set +e # Do NOT quit if the following EXIT-CODE is other than 0
@@ -390,7 +390,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
     return
   fi
 
-  create_database_if_not_exists "multicraft_panel"
+  sql_create_database_if_not_exists "multicraft_panel"
 }
 
 11_stop_deamons() {
@@ -468,7 +468,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
   echo
 
   if [[ -e "${CFG}" ]]; then
-      ask "OVERWRITE_CONF" "n" \
+      mc_ask "OVERWRITE_CONF" "n" \
         "The 'multicraft.conf' file already exists, overwrite? y/[\$def]" \
         "-"
   fi
@@ -671,7 +671,7 @@ EOF
   97_ask_create_needed_sql_users_and_databases
   98_setup_ufw_if_installed
   99_printInstallationComplete
-  quit
+  mc_end_gracefully
 }
 
 call_module(){
