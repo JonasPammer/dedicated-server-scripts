@@ -19,6 +19,12 @@ lamp_install(){
   log_info "== (Unattended) Installing PHP, including it's mods for apache2 and mysql..."
   apt_get_without_interaction "install" "php libapache2-mod-php php-mysql php-pdo-sqlite" | log_debug_output
 
+  log_info "== Start Change some PHP Configuration-Values..."
+  lamp_update_php_setting "memory_limit" "1G" # Default: 8M
+  lamp_update_php_setting "upload_max_filesize" "500M" # Default: 2M
+  lamp_update_php_setting "post_max_size" "512M" # Default: 8M
+  lamp_update_php_setting "max_execution_time" "360" # Default: 30
+
   log_info "== Reloading Apache2..."
   systemctl reload apache2 | log_debug_output
   systemctl status apache2 | log_debug_output

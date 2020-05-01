@@ -3,6 +3,7 @@
   <component name="BashSupportProjectSettings">
     <option name="globalVariables">
       <set>
+        <option value="EDITOR" />
         <option value="MC_CREATE_USER" />
         <option value="MC_DAEMON_ID" />
         <option value="MC_DAEMON_IP" />

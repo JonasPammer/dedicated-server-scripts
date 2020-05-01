@@ -80,12 +80,6 @@ prepare_php(){
   log_info "=== Making sure mod 'apcu' is enabled..."
   phpenmod "apcu" | log_debug_output
 
-  log_info "== Start Change some PHP Configuration-Values..."
-  lamp_update_php_setting "memory_limit" "20M" # Default: 8M
-  lamp_update_php_setting "upload_max_filesize" "256M" # Default: 2M
-  lamp_update_php_setting "post_max_size" "300M" # Default: 8M
-  lamp_update_php_setting "max_execution_time" "360" # Default: 30
-
   # As noticed in the offical mediawiki-link about the installation-process above:
   # "If you install php-apcu you will have to reload your apache configuration in order to avoid a warning message when running configuration script:"
   log_info "== Reloading Apache2..."
@@ -109,13 +103,13 @@ download_and_install_mediawiki() {
   chown -R www-data:www-data "${MW_DIR_TO_INSTALL_IN}" | log_debug_output
 }
 
-create_needed_sql(){
+ask_create_needed_sql(){
   log_info "== Start Pre-Creation of mysql."
   # TODO Untested
 
   set +e # Do NOT quit if the following EXIT-CODE is other than 0
   dialog --backtitle "${SCRIPT_NAME}" --title "Create new SQL-User and grant all privileges?" \
-    --yesno "Should this script create a new SQL-User with a chosen username, a custom/generated password and a table with the his name on which he has all privileges on?" 0 0
+    --yesno "Should this script create a new SQL-User with a chosen username, a custom/generated password and a table with his-exact-name on which he has all privileges on?" 0 0
   local -r dialog_response=$?
   set -e
 
@@ -135,6 +129,8 @@ create_needed_sql(){
 
     echo "*** Generated password for SQL-User '${sql_username}': ${generated_sql_password}"
     log_info "PLEASE NOTE/WRITE/REMEMBER THE ABOVE MENTIONED PASSWORD!"
+
+    read -p "*** Warning! The database '${sql_username}' will now be dropped if it exists! Press enter to continue..."
 
     log_info "== Dropping Database '${sql_username}'..."
     sql_make_query_and_echo "DROP DATABASE IF EXISTS '${sql_username}'" |& log_debug_output
@@ -547,8 +543,6 @@ run_maintenance_update_script(){
 call_module(){
   # Make sure LAMP is installed. Defined in lamp-utils
   lamp_install
-  lamp_check_if_sql_admin_maintenance_user_exists_and_ask_to_create
-  ask_to_enable_default_https
 
   # Keep asking until user chose a path that is a directory which also is empty
   while [[ -z "${MW_DIR_TO_INSTALL_IN}" ]] \
@@ -560,28 +554,10 @@ call_module(){
     MW_DIR_TO_INSTALL_IN=$(cat "${TEMP_DIR}/mediawiki_restore-install_location.choice")
   done
 
-  log_info "= Start installation of MediaWiki"
-#  log_info "== Check for existing installation at '${MW_DIR_TO_INSTALL_IN}'"
-#  if [[ -d "${MW_DIR_TO_INSTALL_IN}" ]]; then
-#    log_info "=== Found! Prompting user to either cancel or move (aka. rename/backup) the existing folder.."
-#    dialog --backtitle "${SCRIPT_NAME}" --title "Directory '${MW_DIR_TO_INSTALL_IN}' already exists!" \
-#          --inputbox "Write 'CONFIRM MOVE FOLDER' in the below text box to forcefully move the folder '${MW_DIR_TO_INSTALL_IN}' to '${MW_DIR_TO_INSTALL_IN}-mvbak-(date)'. \n You can of-course delete it afterwards." 0 0 "" \
-#          2>"${TEMP_DIR}/mediawiki_install-backup_move_existing_folder.choice"
-#    local -r input_confirm=$(cat "${TEMP_DIR}/mediawiki_install-backup_move_existing_folder.choice")
-#
-#    if [[ "${input_confirm}" != "CONFIRM MOVE FOLDER" ]]; then
-#      log_error "=== User didn't confirm move-backup. Aborting..."
-#      return 0
-#    fi
-#
-#    local -r generated_backup_date="$(date +'%Y-%m-%dT%H-%M-%S')"
-#    log_info "=== Moving folder '${MW_DIR_TO_INSTALL_IN}' to '${MW_DIR_TO_INSTALL_IN}-mvbak-${generated_backup_date}'"
-#    mv -f "${MW_DIR_TO_INSTALL_IN}" "${MW_DIR_TO_INSTALL_IN}-mvbak-${generated_backup_date}"
-#  fi
-
+  log_info "= Start installation of MediaWiki in '${MW_DIR_TO_INSTALL_IN}'"
   prepare_php
   download_and_install_mediawiki
-  create_needed_sql
+  ask_create_needed_sql
 
   rm "${MW_TEMP_LOCALSETTINGS_FILE}" || true
   touch "${MW_TEMP_LOCALSETTINGS_FILE}"

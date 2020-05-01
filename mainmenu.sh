@@ -53,6 +53,9 @@ else
     menu_builder+=("MediaWiki-Menu" \
                    "")
 
+    menu_builder+=("NextCloud-Menu" \
+                   "")
+
     menu_builder+=("Install Multicraft (Manual or Load from Config)" \
                    "")
 
@@ -119,6 +122,11 @@ case $CHOSEN_MENU in
 
   *"MediaWiki"*)
     . "${SCRIPT_DIR}/modules/mediawiki_menu.sh"
+    call_module
+    ;;
+
+  *"NextCloud"*)
+    . "${SCRIPT_DIR}/modules/nextcloud_menu.sh"
     call_module
     ;;
 

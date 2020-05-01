@@ -12,21 +12,12 @@ call_module(){
   read -p "Press Enter to continue to mediawiki-menu..."
   CHOSEN_MEDIAWIKI_MENU=""
   # Loop until any selection has been made
-  while [[ -z "$CHOSEN_MEDIAWIKI_MENU" ]]; do
+  while [[ -z "${CHOSEN_MEDIAWIKI_MENU}" ]]; do
 
     menu_builder=()
-
-    if [[ -d "/usr/lib/mediawiki/" ]]; then
-      menu_builder+=("(Re-Run) Install MediaWiki")
-    else
-      menu_builder+=("Install MediaWiki")
-    fi
-    menu_builder+=("")
-
-
-    menu_builder+=("Backup Mediawiki-Instance" "")
-    menu_builder+=("Restore Mediawiki-Instance" "")
-
+    menu_builder+=("Install MediaWiki 1.34.1 (Interactive)" "")
+    menu_builder+=("Backup Mediawiki-Instance (Interactive)" "")
+    menu_builder+=("Restore Mediawiki-Instance (Interactive)" "")
     menu_builder+=("exit" \
                    ".")
 
