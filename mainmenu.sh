@@ -48,6 +48,13 @@ else
     else
       menu_builder+=("Install & Configure LAMPP (Semi-Automatic)")
     fi
+
+    if [[ -d "/opt/netdata" ]]; then
+      menu_builder+=("(Re-Run) Install NetData")
+    else
+      menu_builder+=("Install NetData")
+    fi
+
     menu_builder+=("Install Apache2, MariaDB, PHP and PHPMyAdmin + Configure/Setup PHPMyAdmin")
 
     menu_builder+=("MediaWiki-Menu" \
@@ -112,6 +119,11 @@ case $CHOSEN_MENU in
     fi
 
     . "${SCRIPT_DIR}/modules/install_lampp.sh"
+    call_module
+    ;;
+
+  *"NetData"*)
+    . "${SCRIPT_DIR}/modules/install_netdata.sh"
     call_module
     ;;
 

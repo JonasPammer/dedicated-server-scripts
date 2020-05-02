@@ -112,8 +112,8 @@ EOF
 #        ServerAdmin webmaster@localhost
         DocumentRoot /var/lib/nextcloud
 
-        ErrorLog ${APACHE_LOG_DIR}/nextcloud-error.log
-        CustomLog ${APACHE_LOG_DIR}/nextcloud-access.log combined
+        ErrorLog \${APACHE_LOG_DIR}/nextcloud-error.log
+        CustomLog \${APACHE_LOG_DIR}/nextcloud-access.log combined
 
         # Enable HTTP's Strict Transport Security - https://docs.nextcloud.com/server/18/admin_manual/installation/harden_server.html#enable-http-strict-transport-security
         <IfModule mod_headers.c>
