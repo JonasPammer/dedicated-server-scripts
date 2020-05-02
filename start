@@ -32,6 +32,7 @@ apt_get_without_interaction "install" "sudo \
     htop \
     dialog \
     ffmpeg \
+    clamav clamav-daemon \
     ranger exa tree \
     pwgen \
     lolcat" | log_debug_output
