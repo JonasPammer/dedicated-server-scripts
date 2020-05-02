@@ -56,6 +56,7 @@ _mw_download_and_move_and_add_skin(){
 
 
 prepare_php(){
+  log_info "= Start Prepare PHP"
   #
   # https://www.mediawiki.org/wiki/Manual:Running_MediaWiki_on_Debian_or_Ubuntu#lamp_install_Stack
   #
@@ -86,7 +87,8 @@ prepare_php(){
   service apache2 reload | log_debug_output
 }
 
-download_and_install_mediawiki() {
+download_and_extract_mediawiki() {
+  log_info "= Start Download & Extract mediawiki"
   log_info "== Downloading the official mediawiki-tarball to '${TEMP_DIR}'..."
   wget "https://releases.wikimedia.org/mediawiki/1.34/mediawiki-1.34.1.tar.gz" \
           --output-document "${TEMP_DIR}mediawiki-1.34.1.tar.gz" | log_debug_output
@@ -104,43 +106,43 @@ download_and_install_mediawiki() {
 }
 
 ask_create_needed_sql(){
-  log_info "== Start Pre-Creation of mysql."
+  log_info "= Start Ask user to create SQL-User/Database."
   # TODO Untested
 
   set +e # Do NOT quit if the following EXIT-CODE is other than 0
   dialog --backtitle "${SCRIPT_NAME}" --title "Create new SQL-User and grant all privileges?" \
-    --yesno "Should this script create a new SQL-User with a chosen username, a custom/generated password and a table with his-exact-name on which he has all privileges on?" 0 0
+    --yesno "Should this script create \n* a new SQL-User with a chosen username and a generated password \n* a table with his name, on which he has all privileges on?" 0 0
   local -r dialog_response=$?
   set -e
 
   if [[ "${dialog_response}" -ne 0 ]]; then # no or ESC
-    log_debug "=== User chose skip step create_needed_sql..."
+    log_debug "== User chose skip step create_needed_sql..."
     return
   else
-    log_debug "=== User chose to create_needed_sql..."
+    log_debug "== User chose to create_needed_sql..."
     local sql_username="mediawiki"
     until ! sql_does_user_exist "${sql_username}"; do
       read -s "*** Please enter an AVAILABLE SQL-Username to create (A database with the same name will be created, and this user will be granted all privileges on it!): " sql_username
       echo
     done
 
-    log_info "== Generating password for given SQL-User '${sql_username}'..."
+    log_info "=== Generating password for given SQL-User '${sql_username}'..."
     local -r generated_sql_password="$(rand_generate_password_without_symbols 20)"
 
     echo "*** Generated password for SQL-User '${sql_username}': ${generated_sql_password}"
-    log_info "PLEASE NOTE/WRITE/REMEMBER THE ABOVE MENTIONED PASSWORD!"
+    log_info "*** PLEASE NOTE/WRITE/REMEMBER THE ABOVE MENTIONED PASSWORD!"
 
     read -p "*** Warning! The database '${sql_username}' will now be dropped if it exists! Press enter to continue..."
 
-    log_info "== Dropping Database '${sql_username}'..."
+    log_info "=== Dropping Database '${sql_username}'..."
     sql_make_query_and_echo "DROP DATABASE IF EXISTS '${sql_username}'" |& log_debug_output
 
-    log_info "=== Creating SQL-User '${sql_username}' and granting all privileges on new Database '${sql_username}'."
     sql_create_user_and_same_name_database_and_grant_privileges "${sql_username}" "${generated_sql_password}"
   fi
 }
 
 install_extensions(){
+  log_info "= Start Installation/Basic-Configuration of Extensions (Except VisualEditor)"
   #
   # Renameuser - provides a special page which allows authorized users to rename user accounts. (This will cause page histories, etc. to be updated)
   # https://www.mediawiki.org/wiki/Extension:Renameuser
@@ -397,15 +399,17 @@ EOF
 }
 
 install_parsoid() {
-  log_info "= Start installation/configuration of Parsoid"
-
   # Steps originally from https://www.youtube.com/watch?v=G3FjP2PkApg
+  log_info "= Start Installation/Configuration of Parsoid"
   cd "${TEMP_DIR}"
+
   log_info "== Starting NodeJS-v10 debian setup-Script..."
   curl -sL https://deb.nodesource.com/setup_10.x | bash -
+
   ## "You may also need development tools to build native addons:"
   log_info "== Installing development tools to build native addons..."
   apt_get_without_interaction "install" "gcc g++ make" | log_debug_output
+
   ## "To install the Yarn package manager, run:"
   log_info "== Start Install Yarn package manager"
   log_info "=== Adding debian pubkey..."
@@ -420,7 +424,7 @@ install_parsoid() {
   mkdir -p "/var/lib/parsoid" | log_debug_output
   cd "/var/lib/parsoid"
   log_info "=== Installing parsoid at '/var/lib/parsoid/'..."
-  npm install parsoid
+  npm install parsoid | log_debug_output
 
   log_info "=== Copying parsoid's 'config.example.yaml' to 'config.yaml'..."
   cp -f "/var/lib/parsoid/node_modules/parsoid/config.example.yaml" \
@@ -429,25 +433,32 @@ install_parsoid() {
   log_info "*** "
   log_info "*** Please adjust parsoid's config, located at '/var/lib/parsoid/node_modules/parsoid/config.yaml'."
   log_info "*** Values that need to be changed: 'services.conf.mwApis.uri' and 'services.conf.mwApis.domain'. (2nd-one can be commented)"
-#  log_info "*** Note for myself: Set 'strictSSL' to 'false' if this is only a testing-environment. "
+  log_info "*** Example 'services.conf.mwApis.uri': \"https://$(get_local_ip_adress)/w/api.php\""
   log_info "*** "
   read -p "Press Enter to run the text-editor '${EDITOR:-nano}' on this file..."
   "${EDITOR:-nano}"  "/var/lib/parsoid/node_modules/parsoid/config.yaml"
 
-  log_info "*** "
-  log_info "*** Please make sure the following line is in crontab:"
-  log_info "@reboot bash -c \"cd /var/lib/parsoid/node_modules/parsoid && npm start &\""
-  log_info "*** "
-  read -p "Press Enter to run the text-editor open the crontab-file..."
-  crontab -e
 
-  # TODO It seems to work pretty fine. Except when page includes a math formula, i get HTTP 500 error. Maybe proper configuration of the math extension needs to be done? (Mathoid,....)
-  # TODO on one random post i was on it said that something got solved after moving things around: first do visualeditor and then math in localsettings
-  # TODO without changing anything in this regard it seems to be working, at least in my latest test-installation?! (26.04.2020)
+  log_info "== Setup Process Manager 2 (pm2)"
+  log_info "=== Installing pm2 globally using npm..."
+  npm install pm2 -g | log_debug_output
+
+  log_info "=== Starting parsoid using pm2..."
+  # PM2 will be using 'npm start' in directory '/var/lib/parsoid/node_modules/parsoid/' when starting this pm2-process
+  pm2 start npm --name "parsoid" -- start --prefix "/var/lib/parsoid/node_modules/parsoid/" | log_debug_output
+
+  log_info "=== Saving current pm2 processes-list so parsoid becomes one of the permanent services in pm2..."
+  pm2 save | log_debug_output
+
+  log_info "=== Making pm2 auto-boot at server restart (generates a custom systemd-service)..."
+  pm2 startup | log_debug_output
+
+  log_error "*** Don't forget to link this server's pm2 to your pm2.io account!"
+  cd "${SCRIPT_DIR}"
 }
 
 install_visualeditor_extension(){
-  log_info "= Start installation/configuration of VisualEditor"
+  log_info "= Start Installation/Configuration of VisualEditor"
   #
   # VisualEditor -
   # https://www.mediawiki.org/wiki/Extension:VisualEditor
@@ -484,8 +495,8 @@ EOF
     // Use port 8142 if you use the Debian package
     'url' => 'http://localhost:8000',
     // Parsoid "domain", see below (optional)
-    // CHANGED:
-    'domain' => 'TODO CHANGE ME TO EITHER THE INSTANCES IP ADRESS OR DOMAIN-NAME',
+    // CHANGED: (TODO MAYBE NEEDS TO CHANGE, DEPENDING ON WHAT YOU ENTERED IN YOUR PARSOID-CONFIGURATION UNDER 'services.conf.mwApis.uri')
+    'domain' => '$(get_local_ip_adress)',
     // Parsoid "prefix", see below (optional)
     'prefix' => 'localhost'
 );
@@ -556,7 +567,7 @@ call_module(){
 
   log_info "= Start installation of MediaWiki in '${MW_DIR_TO_INSTALL_IN}'"
   prepare_php
-  download_and_install_mediawiki
+  download_and_extract_mediawiki
   ask_create_needed_sql
 
   rm "${MW_TEMP_LOCALSETTINGS_FILE}" || true
