@@ -35,14 +35,22 @@ source_utils() {
 }
 
 #######################################
-# This command just calls the `dialog`-command with all given parameters attached to it,
-# but always sets at least to --backtitle refer to the SCRIPT_NAME.
-#
-# Parameters:
-#   * - Gets appended at the end of the `dialog`-comment
+# Echo's:
+#   The determined IPv4-address or "127.0.0.1" (localhost) if it couldn't be determined.
 #######################################
-dialog_pixeltutorials() {
-  dialog --backtitle "${SCRIPT_NAME}" ${*}
+get_local_ip_adress() {
+  log_debug "== Determining local IPv4-Address..."
+  local ip="$(ip a | grep 'inet ' | grep -v '127.0.0.1' | awk '{ print $2 }' | cut -d/ -f1 | head -n1)"
+
+  if [[ "${ip}" = "" ]]; then
+    ### Failed, use localhost instead
+    ip="127.0.0.1"
+    log_debug "=== Failed to determine local IP Address. Using: '${ip}'"
+  else
+    log_debug "=== Determined local IP-address: '${ip}'"
+  fi
+
+  echo "${ip}"
 }
 
 #######################################

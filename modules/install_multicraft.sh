@@ -100,16 +100,7 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
    "Local front end: \$var"
 
   ## Try to determine local IP address
-  IP="$(ip a | grep 'inet ' | grep -v '127.0.0.1' | awk '{ print $2 }' | cut -d/ -f1 | head -n1)"
-
-  if [[ "${IP}" = "" ]]; then
-    ### Failed, use localhost instead
-    IP="127.0.0.1"
-    log_debug "== Failed to determine local IP Adress. Now using: '${IP}'"
-  else
-    log_debug "== Determined local IP-adress: '${IP}'"
-  fi
-
+  IP="$(get_local_ip_adress)"
 
   if [[ "${MC_LOCAL}" != "y" ]]; then
       export MC_DB_TYPE="mysql"
