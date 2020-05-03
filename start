@@ -16,29 +16,44 @@ log_info "= Make sure programs I always need are installed"
 log_info "== (Unattended) Refresh APT-Sources"
 apt_get_without_interaction "update" | log_debug_output
 
-log_info "== (Unattended) Installing Tools from the default Debian-Buster repository..."
-apt_get_without_interaction "install" "sudo \
-    man \
-    dos2unix \
-    git \
-    locate \
-    screen \
-    nano \
-    zip unzip \
-    wget \
-    software-properties-common \
-    apt-transport-https \
-    neofetch screenfetch \
-    htop \
-    dialog \
-    ffmpeg \
-    clamav clamav-daemon \
-    ranger exa tree \
-    pwgen \
-    lolcat" | log_debug_output
+log_info "== (Unattended) Installing Tools available in the default Debian-Buster repository..."
+sftw=""
+#######################################
+### SOFTWARE USED BY THIS SCRIPT
+sftw="${sftw} sudo" # Provide limited super user privileges to specific users
+# sftw="${sftw} apt-transport-https" # No longer needed - https support has been moved into the apt package in 1.5. See https://packages.debian.org/en/buster/apt-transport-https
+sftw="${sftw} software-properties-common" # useful scripts for adding and removing PPAs.
+sftw="${sftw} gdebi-core" # like apt, but for local packages - Used to easily install a package INCLUDING all of its dependencies (Uses dpkg as backend).
+sftw="${sftw} wget" # retrieves files from the web.
+sftw="${sftw} curl" # command line tool for transferring data with URL syntax.
+sftw="${sftw} nano" # small, friendly text editor inspired by Pico.
+sftw="${sftw} dialog" # Displays user-friendly dialog boxes from shell scripts.
+sftw="${sftw} zip unzip" # (De-)Archiver for .zip files. https://stackoverflow.com/questions/10540935/what-is-the-difference-between-tar-and-zip
+sftw="${sftw} pwgen" # generates random, meaningless but pronounceable passwords.
+sftw="${sftw} lolcat" # colorful 'cat'.
 
-log_info "== (Unattended) Installing 'gimmick' Tools from the default Debian-Buster repository..."
-apt_get_without_interaction "install" "cmatrix speedtest-cli" | log_debug_output
+#######################################
+### SOFTWARE NOT USED BY THIS SCRIPT
+sftw="${sftw} man-db" # provides the man command, the primary way of examining the on-line help files (manual pages).
+sftw="${sftw} screen" # terminal multiplexer with VT100/ANSI terminal emulation.
+sftw="${sftw} locate" # 'updatedb' generates an index of files and directories. 'locate' can be used to quickly query this index.
+sftw="${sftw} htop" # alternative to top - an interactive system-monitor, process-viewer and process-manager
+sftw="${sftw} git" # fast, scalable, distributed revision control system
+sftw="${sftw} clamav" # anti-virus utility for Unix - command-line interface
+sftw="${sftw} clamav-daemon" # anti-virus utility for Unix - scanner daemon
+sftw="${sftw} ranger" # Console File Manager with VI Key Bindings
+sftw="${sftw} exa" # Modern replacement for ls - It knows about symlinks, extended attributes, and Git.
+sftw="${sftw} tree" # displays an indented directory tree, in color.
+sftw="${sftw} ffmpeg " # Tools for transcoding, streaming and playing of multimedia files.
+sftw="${sftw} dos2unix " # Converts text file line endings between CRLF and LF.
+sftw="${sftw} neofetch screenfetch" # Shows Linux System Information with Distribution Logo.
+sftw="${sftw} speedtest-cli" # Command line interface for testing internet bandwidth using speedtest.net.
+
+#######################################
+### OTHER
+sftw="${sftw} cmatrix" # simulates the display from "The Matrix".
+
+apt_get_without_interaction "install" "${sftw}" | log_debug_output
 
 # Explained in https://askubuntu.com/a/610079
 log_info "== Creating bash-alias'es to be applied for new users..."
@@ -58,7 +73,7 @@ if hash java 2>/dev/null; then
   log_info "=== All fine! Java is installed."
 else
   ## Installation as described in https://installvirtual.com/install-java-8-on-debian-10-buster/
-  log_error "=== Installing OpenJDK8..."
+  log_error "=== Start Install OpenJDK8"
 
   log_info "==== Adding repository..."
   wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | sudo apt-key add -
@@ -82,6 +97,4 @@ done
 
 
 
-
-#
 end_gracefully
