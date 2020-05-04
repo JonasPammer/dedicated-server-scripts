@@ -21,6 +21,7 @@ sftw=""
 #######################################
 ### SOFTWARE USED BY THIS SCRIPT
 sftw="${sftw} sudo" # Provide limited super user privileges to specific users
+sftw="${sftw} net-tools" # This package includes the important tools for controlling the network subsystem of the Linux kernel. This includes arp, ifconfig, netstat, rarp, nameif and route.
 # sftw="${sftw} apt-transport-https" # No longer needed - https support has been moved into the apt package in 1.5. See https://packages.debian.org/en/buster/apt-transport-https
 sftw="${sftw} software-properties-common" # useful scripts for adding and removing PPAs.
 sftw="${sftw} gdebi-core" # like apt, but for local packages - Used to easily install a package INCLUDING all of its dependencies (Uses dpkg as backend).
@@ -35,6 +36,9 @@ sftw="${sftw} lolcat" # colorful 'cat'.
 #######################################
 ### SOFTWARE NOT USED BY THIS SCRIPT
 sftw="${sftw} man-db" # provides the man command, the primary way of examining the on-line help files (manual pages).
+sftw="${sftw} bash-completion" # extends bash's standard completion behavior to achieve complex command lines with just a few keystrokes.
+sftw="${sftw} lsof" # lists information about any files that are open, by processes currently running on the system.
+sftw="${sftw} telnet" #
 sftw="${sftw} screen" # terminal multiplexer with VT100/ANSI terminal emulation.
 sftw="${sftw} locate" # 'updatedb' generates an index of files and directories. 'locate' can be used to quickly query this index.
 sftw="${sftw} htop" # alternative to top - an interactive system-monitor, process-viewer and process-manager
@@ -66,7 +70,6 @@ alias ls='ls --color=auto'
 
 alias ipe='curl ipinfo.io/ip'
 EOF
-
 
 log_info "== Making sure Java 8 is installed..."
 if hash java 2>/dev/null; then

@@ -433,6 +433,11 @@ INSTALL_RESOURCES="bin/ jar/ downloader/ launcher/ scripts/ ssl/ templates/ eula
       mv "${MC_DIR}/bin" "${MC_DIR}/bin.bak"
       log_debug "=== Done."
   fi
+
+  cd "${INSTALL_RESOURCES_DIR}"
+  log_debug "== Unzipping '${INSTALL_RESOURCES_DIR}$res'... "
+  unzip "${INSTALL_RESOURCES_DIR}multicraft.zip"
+
   for res in ${INSTALL_RESOURCES}; do
       log_debug "== Installing '${INSTALL_RESOURCES_DIR}$res' to '$MC_DIR/'... "
       cp -a "${INSTALL_RESOURCES_DIR}$res" "${MC_DIR}/"
