@@ -29,10 +29,10 @@ else
     set +e # Do NOT quit if the following EXIT-CODE is other than 0
     if ssh_is_permitrootlogin_enabled; then
       menu_builder+=("Disable PermitRootLogin (Automatic)" \
-                     ".")
+                     " ")
     else
       menu_builder+=("Enable PermitRootLogin (Automatic)" \
-                     ".")
+                     " ")
     fi
     set -e
 
@@ -48,26 +48,28 @@ else
     else
       menu_builder+=("Install & Configure LAMPP (Semi-Automatic)")
     fi
-
-    if [[ -d "/opt/netdata" ]]; then
-      menu_builder+=("(Re-Run) Install NetData")
-    else
-      menu_builder+=("Install NetData")
-    fi
-
     menu_builder+=("Install Apache2, MariaDB, PHP and PHPMyAdmin + Configure/Setup PHPMyAdmin")
 
-    menu_builder+=("MediaWiki-Menu" \
-                   "")
+    if [[ -d "/opt/netdata" ]]; then
+      menu_builder+=("(Re-Run) Install NetData" \
+                     " ")
+    else
+      menu_builder+=("Install NetData" \
+                     " ")
+    fi
 
-    menu_builder+=("NextCloud-Menu" \
-                   "")
+
+    menu_builder+=("MediaWiki Menu" \
+                   " ")
+
+    menu_builder+=("NextCloud Menu" \
+                   " ")
 
     menu_builder+=("Install Multicraft (Manual or Load from Config)" \
-                   "")
+                   " ")
 
     menu_builder+=("exit" \
-                   ".")
+                   " ")
 
     dialog --backtitle "${SCRIPT_NAME}" --nocancel \
       --title "Main Menu" \
@@ -75,6 +77,17 @@ else
         "${menu_builder[@]}" \
       2>"${TEMP_DIR}/mainmenu.chosen"
     CHOSEN_MENU=$(cat "${TEMP_DIR}/mainmenu.chosen")
+
+    dialog --backtitle 'PixelTutorials Dedicated Server Scripts' --nocancel --title 'Main Menu' --menu '' 0 0 0 \
+    'Sudo-User Menu (Interactive)' 'Check which user has sudo-priv. Add/Remove priviliges to/from user.' \
+    'Enable PermitRootLogin (Automatic)' ' ' \
+    'Basic Secure (Automatic)' 'Install/Enable UFW (Firewall) and Fail2Ban. Setup UFW with simple rules.' \
+    'Install & Configure LAMPP (Semi-Automatic)' 'Install Apache2, MariaDB, PHP and PHPMyAdmin + Configure/Setup PHPMyAdmin' \
+    'Install NetData' ' ' \
+    'MediaWiki Menu' ' ' \
+    'NextCloud Menu' ' ' \
+    'Install Multicraft (Manual or Load from Config)' ' ' \
+    exit ' '
 
   done
 fi
